@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Earn - Home</title>
+    <script src="https://adsgram.org/sdk/v1/adsgram-sdk.js" async></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI', sans-serif}
+        body{background:#0b0614;color:#fff;overflow-x:hidden}
+        .glow-bg{position:fixed;inset:-50%;background:radial-gradient(circle at 20% 20%,rgba(180,0,255,.1),transparent 40%),radial-gradient(circle at 80% 80%,rgba(120,0,255,.05),transparent 45%); z-index:0; pointer-events:none}
+        .app{position:relative;z-index:2;padding:20px;padding-bottom:120px; animation: fadeIn 0.4s ease-in;}
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        h1{text-align:center;font-size:32px;color:#d36bff;text-shadow:0 0 10px rgba(180,0,255,0.4);margin-bottom:5px}
+        .subtitle{text-align:center;opacity:0.6;margin-bottom:28px;font-size:13px}
+        .card{background: #190c2d; border-radius: 20px; padding: 20px; margin-bottom: 18px; border: 1px solid rgba(211, 107, 255, 0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.6);}
+        .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .stat{text-align:center; padding: 15px 10px;}
+        .stat h2{color:#7dffb3;font-size:22px;margin-bottom:4px}
+        .stat p{font-size:11px;opacity:0.5;text-transform:uppercase;letter-spacing:0.5px}
+        .btn{width:100%;padding:16px;border:none;border-radius:16px;font-size:16px;font-weight:bold;color:#fff;background:linear-gradient(135deg,#a400ff,#ff00cc);cursor:pointer; box-shadow:0 5px 15px rgba(180,0,255,0.3)}
+        .bottom-nav{position:fixed;bottom:0;left:0;width:100%;height:70px;background:#0f0719;display:flex;justify-content:space-around;align-items:center;z-index:9999;border-top:1px solid rgba(211,107,255,0.15)}
+        .bottom-nav a{text-decoration:none;color:#666;text-align:center;flex:1}
+        .bottom-nav a.active{color:#d36bff}
+        .bottom-nav i{display:block;font-size:20px;margin-bottom:4px}
+        .bottom-nav span{font-size:10px}
+    
+/* Cards floating animation */
+.card, .task-card, .stat-card {
+    animation: floatAnim 3s ease-in-out infinite;
+    transition: transform 0.3s ease;
+}
+
+@keyframes floatAnim {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+/* Jab user click karega toh halka sa dabega */
+.card:active {
+    transform: scale(0.95);
+}
+
+
+</style>
+</head>
+<body>
+    <div class="glow-bg"></div>
+    <div class="app">
+        <h1>View Earn</h1>
+        <div class="subtitle">Clean & Solid Dashboard</div>
+        <div class="card" style="text-align:center">
+            <p style="font-size:11px; opacity:0.5; margin-bottom:5px; letter-spacing:1px">USDT BALANCE (1 Coin = 0.000001)</p>
+            <h2 id="usdBalance" style="color:#7dffb3; font-size:28px">$0.000000</h2>
+        </div>
+        <div class="stats">
+            <div class="card stat"><h2 id="mainBalance">0</h2><p><i class="fa-solid fa-coins"></i> Coins</p></div>
+            <div class="card stat"><h2 id="totalEarned">0</h2><p><i class="fa-solid fa-chart-line"></i> Total</p></div>
+            <div class="card stat"><h2 id="refCount">0</h2><p><i class="fa-solid fa-users"></i> Refs</p></div>
+            <div class="card stat"><h2 id="todayViews">0</h2><p><i class="fa-solid fa-eye"></i> Views</p></div>
+        </div>
+        <div class="card" style="text-align:center">
+            <button class="btn" onclick="showAdsgram()">WATCH VIDEO ADS +10</button>
+        </div>
+    </div>
+    <nav class="bottom-nav">
+        <a href="index.html" class="active"><i class="fa-solid fa-house"></i><span>Home</span></a>
+        <a href="withdraw.html"><i class="fa-solid fa-wallet"></i><span>Withdraw</span></a>
+        <a href="referral.html"><i class="fa-solid fa-user-group"></i><span>Referral</span></a>
+        <a href="tasks.html"><i class="fa-solid fa-layer-group"></i><span>Tasks</span></a>
+    </nav>
+<script>
+    const firebaseConfig = { databaseURL: "https://watch2earn-e5ab2-default-rtdb.firebaseio.com/" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    let uid = localStorage.getItem("uid") || "VE" + Math.floor(Math.random() * 90000);
+    localStorage.setItem("uid", uid);
+    db.ref("users/" + uid).on("value", snap => {
+        const d = snap.val() || { balance: 0, earned: 0 };
+        document.getElementById("mainBalance").innerText = d.balance;
+        document.getElementById("totalEarned").innerText = d.earned;
+        document.getElementById("refCount").innerText = d.referrals || 0;
+        document.getElementById("todayViews").innerText = d.views || 0;
+        document.getElementById("usdBalance").innerText = "$" + (d.balance * 0.000001).toFixed(6);
+    });
+</script>
+<script>
+    (function(){
+        const canvas = document.createElement("canvas");
+        // zIndex 9999 rakha hai taaki snow sabse aage dikhe
+        Object.assign(canvas.style, {
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            pointerEvents: "none",
+            zIndex: 9999 
+        });
+        document.body.appendChild(canvas);
+        const ctx = canvas.getContext("2d");
+        let w, h, snow = [];
+
+        function resize() {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        }
+        window.addEventListener("resize", resize);
+        resize();
+
+        // Snowflakes ki quantity aur size set karna
+        for (let i = 0; i < 35; i++) {
+            snow.push({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                s: Math.random() * 15 + 10, // Snow ka size (Bada)
+                sp: Math.random() * 0.8 + 0.3, // Girne ki speed
+                o: Math.random() * 0.5 + 0.2 // Transparency
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, w, h);
+            snow.forEach(f => {
+                ctx.globalAlpha = f.o;
+                ctx.font = f.s + "px Arial";
+                ctx.fillStyle = "#fff";
+                ctx.fillText("❄", f.x, f.y);
+                f.y += f.sp;
+                // Agar side se hawa dikhani ho toh x bhi thoda change kar sakte hain
+                f.x += Math.sin(f.y / 50) * 0.5; 
+
+                if (f.y > h) {
+                    f.y = -20;
+                    f.x = Math.random() * w;
+                }
+            });
+            requestAnimationFrame(draw);
+        }
+        draw();
+    })();
+</script>
+
+</body>
+</html>
