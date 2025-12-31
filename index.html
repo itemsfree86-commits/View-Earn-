@@ -81,7 +81,7 @@
     });
 
     function showAdsgram(){
-        const Ad=window.Adsgram.init({blockId:"20350"});
+        const AdController = window.Adsgram.init({blockId:"20350"});
         Ad.show().then(()=>{
             db.ref("users/"+uid).transaction(c=>{if(c){c.balance=(c.balance||0)+10;c.earned=(c.earned||0)+10;c.views=(c.views||0)+1;}return c;});
         }).catch(()=>{});
