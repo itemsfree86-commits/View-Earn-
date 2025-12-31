@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Earn - Tasks</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI', sans-serif}
+        body{background:#0b0614;color:#fff;overflow-x:hidden}
+        #snowCanvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999}
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .app{position:relative;z-index:10;padding:20px;padding-bottom:120px;}
+        h1{text-align:center;color:#d36bff;font-size:32px;margin:20px 0;text-shadow:0 0 10px rgba(180,0,255,0.4)}
+        
+        /* Task Cards */
+        .task-card{
+            background:#190c2d;border-radius:24px;padding:22px;margin-bottom:18px;
+            border:1px solid rgba(211,107,255,0.2);display:flex;justify-content:space-between;
+            align-items:center; animation: fadeInUp 0.5s ease backwards;
+        }
+        .task-info h4{font-size:18px;margin-bottom:5px;color:#fff}
+        .task-info p{font-size:16px;color:#7dffb3;font-weight:bold}
+        
+        .btn{
+            padding:14px 28px;background:linear-gradient(135deg,#a400ff,#ff00cc);
+            color:#fff;border-radius:14px;font-weight:bold;border:none;cursor:pointer;
+            font-size:14px;box-shadow:0 4px 15px rgba(164,0,255,0.3)
+        }
+
+        /* Fixed Bottom Nav (Size Badi Kar Di) */
+        .bottom-nav{
+            position:fixed;bottom:0;left:0;width:100%;height:80px;
+            background:#0f0719;display:flex;justify-content:space-around;
+            align-items:center;z-index:10000;border-top:1px solid rgba(211,107,255,0.15)
+        }
+        .bottom-nav a{text-decoration:none;color:#777;text-align:center;flex:1;transition:0.3s}
+        .bottom-nav a.active{color:#d36bff}
+        .bottom-nav i{display:block;font-size:24px;margin-bottom:6px} /* Icon bada kiya */
+        .bottom-nav span{font-size:12px;font-weight:500} /* Text bada kiya */
+    </style>
+</head>
+<body>
+    <canvas id="snowCanvas"></canvas>
+    <div class="app">
+        <h1>Official Tasks</h1>
+        <div id="taskContainer"></div>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="index.html"><i class="fa-solid fa-house"></i><span>Home</span></a>
+        <a href="withdraw.html"><i class="fa-solid fa-wallet"></i><span>Withdraw</span></a>
+        <a href="referral.html"><i class="fa-solid fa-user-group"></i><span>Referral</span></a>
+        <a href="tasks.html" class="active"><i class="fa-solid fa-layer-group"></i><span>Tasks</span></a>
+    </nav>
+
+<script>
+    const firebaseConfig={databaseURL:"https://watch2earn-e5ab2-default-rtdb.firebaseio.com/"};
+    if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+    const db=firebase.database(); 
+    const uid=localStorage.getItem("uid");
+
+    db.ref("tasks").on("value",snap=>{
+        const tasks=snap.val();
+        db.ref("users/"+uid+"/completed_tasks").on("value",st=>{
+            const comp=st.val()||{}; 
+            const container=document.getElementById("taskContainer");
+            container.innerHTML="";
+            
+            let delay = 0.1;
+            for(let id in tasks){
+                if(comp[id])continue;
+                
+                // UNDEFINED FIX: Agar 'name' na mile toh 'title' ya direct ID dikhaye
+                let taskName = tasks[id].name || tasks[id].title || "Official Task";
+                let reward = tasks[id].reward || 0;
+
+                container.innerHTML+=`
+                <div class="task-card" style="animation-delay: ${delay}s">
+                    <div class="task-info">
+                        <h4>${taskName}</h4>
+                        <p>+${reward} Coins</p>
+                    </div>
+                    <button class="btn" onclick="goTask('${tasks[id].link}','${id}',${reward})">START</button>
+                </div>`;
+                delay += 0.1;
+            }
+        });
+    });
+
+    function goTask(link,id,reward){
+        if(!link || link === "undefined") {
+            alert("Task link not found!");
+            return;
+        }
+        window.open(link,'_blank');
+        db.ref("users/"+uid+"/completed_tasks/"+id).set(true);
+        db.ref("users/"+uid).transaction(c=>{
+            if(c){
+                c.balance=(c.balance||0)+parseInt(reward);
+                c.earned=(c.earned||0)+parseInt(reward);
+            }
+            return c;
+        });
+    }
+
+    // SNOW SCRIPT (Medium Size & Lite)
+    const canvas=document.getElementById("snowCanvas"); const ctx=canvas.getContext("2d");
+    let f=[]; function res(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+    res(); window.onresize=res;
+    for(let i=0;i<40;i++)f.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,s:Math.random()*18+10,sp:Math.random()*0.6+0.2,o:Math.random()*0.4+0.1});
+    function draw(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        f.forEach(p=>{
+            ctx.fillStyle=`rgba(255,255,255,${p.o})`;
+            ctx.font=p.s+"px Arial"; ctx.fillText("❄",p.x,p.y);
+            p.y+=p.sp; if(p.y>canvas.height)p.y=-20;
+        });
+        requestAnimationFrame(draw);
+    } draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Earn - Withdraw</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI', sans-serif}
+        body{background:#0b0614;color:#fff;overflow-x:hidden;min-height:100vh}
+        #snowCanvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999}
+        
+        .glass-card {
+            background: rgba(25, 12, 45, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(211, 107, 255, 0.2);
+            border-radius: 24px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .app{position:relative;z-index:10;padding:20px;padding-bottom:120px; animation: fadeInUp 0.8s ease;}
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        h1{text-align:center;color:#d36bff;font-size:32px;margin:20px 0;text-shadow:0 0 10px rgba(180,0,255,0.4)}
+        .balance-value{font-size:32px;color:#7dffb3;font-weight:bold;margin-bottom:10px;text-align:center}
+
+        .input-group{margin:15px 0;text-align:left}
+        .input-group label{display:block;margin-bottom:8px;font-size:14px;color:#d36bff}
+        
+        input, select{
+            width:100%;padding:15px;border-radius:12px;border:1px solid rgba(211, 107, 255, 0.3);
+            background: rgba(255, 255, 255, 0.05);color:#fff;font-size:16px;outline:none
+        }
+
+        .btn{
+            width:100%;padding:18px;background:linear-gradient(135deg,#a400ff,#ff00cc);
+            color:#fff;border-radius:16px;font-weight:bold;border:none;cursor:pointer;
+            font-size:16px;box-shadow:0 5px 15px rgba(164,0,255,0.3);transition:0.3s;margin-top:10px
+        }
+
+        .bottom-nav{
+            position:fixed;bottom:0;left:0;width:100%;height:80px;background:#0f0719;
+            display:flex;justify-content:space-around;align-items:center;z-index:10000;
+            border-top:1px solid rgba(211,107,255,0.15)
+        }
+        .bottom-nav a{text-decoration:none;color:#777;text-align:center;flex:1}
+        .bottom-nav a.active{color:#d36bff}
+        .bottom-nav i{display:block;font-size:24px;margin-bottom:6px}
+        .bottom-nav span{font-size:12px}
+    </style>
+</head>
+<body>
+    <canvas id="snowCanvas"></canvas>
+    <div class="app">
+        <h1>Withdraw</h1>
+        <div class="glass-card">
+            <p style="text-align:center;opacity:0.6;font-size:12px">YOUR BALANCE</p>
+            <div class="balance-value" id="userBal">0</div>
+        </div>
+
+        <div class="glass-card">
+            <div class="input-group">
+                <label>Method</label>
+                <select id="method">
+                    <option value="USDT (BEP-20)">USDT (BEP-20)</option>
+                    <option value="TON">TON</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Amount (Coins)</label>
+                <input type="number" id="withdrawAmount" placeholder="Min 5000">
+            </div>
+            <div class="input-group">
+                <label>Wallet Address</label>
+                <input type="text" id="userAddress" placeholder="Enter Address">
+            </div>
+            <button class="btn" onclick="sendRequest()">WITHDRAW NOW</button>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="index.html"><i class="fa-solid fa-house"></i><span>Home</span></a>
+        <a href="withdraw.html" class="active"><i class="fa-solid fa-wallet"></i><span>Withdraw</span></a>
+        <a href="referral.html"><i class="fa-solid fa-user-group"></i><span>Referral</span></a>
+        <a href="tasks.html"><i class="fa-solid fa-layer-group"></i><span>Tasks</span></a>
+    </nav>
+
+<script>
+    const firebaseConfig={databaseURL:"https://watch2earn-e5ab2-default-rtdb.firebaseio.com/"};
+    if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+    const db=firebase.database(); 
+    const uid=localStorage.getItem("uid");
+
+    db.ref("users/"+uid).on("value", snap => {
+        document.getElementById("userBal").innerText = snap.val()?.balance || 0;
+    });
+
+    function sendRequest() {
+        const amt = parseInt(document.getElementById("withdrawAmount").value);
+        const addr = document.getElementById("userAddress").value;
+        const meth = document.getElementById("method").value;
+
+        if(!amt || amt < 5000) { alert("Minimum 5000 coins required!"); return; }
+        if(!addr || addr.trim() === "") { alert("Please enter a valid address!"); return; }
+
+        const userRef = db.ref("users/" + uid);
+        
+        userRef.transaction((current) => {
+            if (current && (current.balance || 0) >= amt) {
+                current.balance = current.balance - amt;
+                return current;
+            }
+            return;
+        }, (error, committed) => {
+            if (committed) {
+                // Yahan humne key ka naam 'address' rakha hai taaki undefined na aaye
+                db.ref("withdrawals").push({
+                    uid: uid,
+                    amount: amt,
+                    address: addr, 
+                    method: meth,
+                    status: "Pending",
+                    timestamp: Date.now()
+                }).then(() => {
+                    alert("Request Sent Successfully!");
+                    document.getElementById("withdrawAmount").value = "";
+                    document.getElementById("userAddress").value = "";
+                });
+            } else {
+                alert("Insufficient Balance!");
+            }
+        });
+    }
+
+    // Lite Snow
+    const canvas=document.getElementById("snowCanvas"); const ctx=canvas.getContext("2d");
+    let f=[]; function res(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+    res(); window.onresize=res;
+    for(let i=0;i<40;i++)f.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,s:Math.random()*15+10,sp:Math.random()*0.5+0.2,o:Math.random()*0.3});
+    function draw(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        f.forEach(p=>{
+            ctx.fillStyle=`rgba(255,255,255,${p.o})`;
+            ctx.font=p.s+"px Arial"; ctx.fillText("❄",p.x,p.y);
+            p.y+=p.sp; if(p.y>canvas.height)p.y=-20;
+        });
+        requestAnimationFrame(draw);
+    } draw();
+</script>
+</body>
+</html>
