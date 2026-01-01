@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+        <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,6 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
     <script>eruda.init();</script>
     
+    <script src="https://adsgram.ai/sdk.js"></script>
+    
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -15,33 +17,68 @@
     <style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI', sans-serif}
         body{background:#0b0614;color:#fff;overflow-x:hidden; min-height: 100vh;}
-        #snowCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
+        #snowCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
         .app{position:relative;z-index:10;padding:20px;padding-bottom:120px;}
-        .glass-card{ background: rgba(25, 12, 45, 0.6); backdrop-filter: blur(10px); border-radius: 24px; padding: 20px; margin-bottom: 18px; border: 1px solid rgba(211, 107, 255, 0.2); text-align:center; }
-        .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-        .stat h2{color:#7dffb3;font-size:24px;}
-        .btn{ width:100%;padding:18px;border:none;border-radius:18px;font-size:16px; font-weight:bold;color:#fff;background:linear-gradient(135deg,#a400ff,#ff00cc); cursor:pointer; box-shadow:0 5px 15px rgba(180,0,255,0.3); }
-        .bottom-nav{ position:fixed;bottom:0;left:0;width:100%;height:80px;background:#0f0719; display:flex;justify-content:space-around;align-items:center;z-index:10000; border-top:1px solid rgba(211,107,255,0.15) }
-        .bottom-nav a{text-decoration:none;color:#777;text-align:center;flex:1}
-        .bottom-nav a.active{color:#d36bff}
-        .bottom-nav i{display:block;font-size:24px;margin-bottom:6px}
+        
+        /* Premium Glass Card */
+        .glass-card{ 
+            background: rgba(25, 12, 45, 0.6); 
+            backdrop-filter: blur(10px); 
+            border-radius: 24px; 
+            padding: 20px; 
+            margin-bottom: 18px; 
+            border: 1px solid rgba(211, 107, 255, 0.2); 
+            text-align:center; 
+        }
+
+        .stats-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+        .stat-box h2{ color:#7dffb3; font-size:24px; margin-bottom:4px; }
+        .stat-box p{ font-size:10px; opacity:0.6; text-transform:uppercase; letter-spacing:1px; }
+
+        /* Main Button */
+        .btn{ 
+            width:100%; padding:18px; border:none; border-radius:18px; 
+            font-size:16px; font-weight:bold; color:#fff; 
+            background: linear-gradient(135deg,#a400ff,#ff00cc); 
+            cursor:pointer; box-shadow:0 8px 20px rgba(180,0,255,0.3);
+            transition: 0.3s;
+        }
+        .btn:active{ transform: scale(0.98); }
+        .btn:disabled{ background: #333; box-shadow: none; opacity: 0.7; }
+
+        #statusMsg{ margin-top:12px; font-size:11px; font-weight:bold; }
+
+        /* Bottom Nav */
+        .bottom-nav{ 
+            position:fixed; bottom:0; left:0; width:100%; height:80px; 
+            background:#0f0719; display:flex; justify-content:space-around; 
+            align-items:center; z-index:10000; border-top:1px solid rgba(211,107,255,0.15);
+        }
+        .bottom-nav a{ text-decoration:none; color:#777; text-align:center; flex:1; font-size:12px; }
+        .bottom-nav a.active{ color:#d36bff; }
+        .bottom-nav i{ display:block; font-size:22px; margin-bottom:4px; }
     </style>
 </head>
 <body>
     <canvas id="snowCanvas"></canvas>
     <div class="app">
-        <h1 style="text-align:center; color:#d36bff; margin-bottom:20px;">View Earn</h1>
+        <h1 style="text-align:center; color:#d36bff; margin-bottom:20px; font-weight:800;">View Earn</h1>
+        
         <div class="glass-card">
-            <p style="font-size:12px; opacity:0.6;">USDT BALANCE</p>
-            <h2 id="usdBalance" style="color:#7dffb3; font-size:30px">$0.000000</h2>
+            <p style="font-size:12px; opacity:0.6; margin-bottom:5px;">USDT BALANCE</p>
+            <h2 id="usdBalance" style="color:#7dffb3; font-size:32px; letter-spacing:1px;">$0.000000</h2>
         </div>
-        <div class="stats">
-            <div class="glass-card stat"><h2 id="mainBalance">0</h2><p style="font-size:10px; opacity:0.6;">COINS</p></div>
-            <div class="glass-card stat"><h2 id="totalEarned">0</h2><p style="font-size:10px; opacity:0.6;">TOTAL</p></div>
+
+        <div class="stats-grid">
+            <div class="glass-card stat-box"><h2 id="mainBalance">0</h2><p>Coins</p></div>
+            <div class="glass-card stat-box"><h2 id="totalEarned">0</h2><p>Total</p></div>
+            <div class="glass-card stat-box"><h2 id="refStats">0</h2><p>Refs</p></div>
+            <div class="glass-card stat-box"><h2 id="viewStats">0</h2><p>Views</p></div>
         </div>
-        <div class="glass-card">
-            <button class="btn" id="adBtn" onclick="showAdsgram()">SHOW AD & EARN +10</button>
-            <p id="statusMsg" style="margin-top:10px; font-size:11px; font-weight:bold; color: #ff9800;">Waiting for Adsgram SDK...</p>
+
+        <div class="glass-card" style="margin-top:10px;">
+            <button class="btn" id="adBtn" onclick="showAdsgram()" disabled>LOADING SYSTEM...</button>
+            <p id="statusMsg" style="color:#ff9800;">● INITIALIZING SDK...</p>
         </div>
     </div>
 
@@ -53,62 +90,60 @@
     </nav>
 
 <script>
-    // 1. Firebase Sync
+    // --- Firebase Setup ---
     const firebaseConfig = { databaseURL: "https://watch2earn-e5ab2-default-rtdb.firebaseio.com/" };
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    
     let uid = localStorage.getItem("uid") || "VE" + Math.floor(Math.random() * 99999);
     localStorage.setItem("uid", uid);
 
+    // Sync Data
     db.ref("users/" + uid).on("value", snap => {
-        const d = snap.val() || {balance: 0};
+        const d = snap.val() || {balance: 0, earned: 0, refs: 0, views: 0};
         document.getElementById("mainBalance").innerText = Math.floor(d.balance || 0);
         document.getElementById("totalEarned").innerText = d.earned || 0;
+        document.getElementById("refStats").innerText = d.refs || 0;
+        document.getElementById("viewStats").innerText = d.views || 0;
         document.getElementById("usdBalance").innerText = "$" + (Math.max(0, d.balance) * 0.000001).toFixed(6);
     });
 
-    // 2. Load SDK Manually to bypass simple blocks
-    function loadAdsgramSDK() {
-        const script = document.createElement('script');
-        script.src = "https://adsgram.ai/sdk.js";
-        script.onload = () => {
-            console.log("Adsgram SDK Loaded via Manual Injector");
-            document.getElementById("statusMsg").innerText = "● SYSTEM READY";
-            document.getElementById("statusMsg").style.color = "#7dffb3";
-        };
-        script.onerror = () => {
-            document.getElementById("statusMsg").innerText = "● SDK FAILED TO LOAD";
-            document.getElementById("statusMsg").style.color = "#ff5252";
-        };
-        document.head.appendChild(script);
+    // --- Adsgram Logic ---
+    function checkSystem() {
+        const btn = document.getElementById("adBtn");
+        const msg = document.getElementById("statusMsg");
+        
+        if (window.Adsgram) {
+            btn.disabled = false;
+            btn.innerText = "SHOW AD & EARN +10";
+            msg.innerText = "● SYSTEM READY";
+            msg.style.color = "#7dffb3";
+        } else {
+            setTimeout(checkSystem, 1000);
+        }
     }
-    loadAdsgramSDK();
+    checkSystem();
 
     function showAdsgram() {
-        if (typeof window.Adsgram === 'undefined') {
-            alert("Adsgram SDK is blocked by browser or domain not whitelisted. Please use Telegram app.");
-            return;
-        }
-
         const AdController = window.Adsgram.init({ blockId: "int-20375" }); 
-        
         AdController.show().then(() => {
             db.ref("users/" + uid).transaction(c => {
                 if (c) {
                     c.balance = (c.balance || 0) + 10;
                     c.earned = (c.earned || 0) + 10;
+                    c.views = (c.views || 0) + 1;
                 }
                 return c;
             });
             alert("Reward Added!");
         }).catch((err) => {
-            console.error("Adsgram Error:", err);
-            alert("Error: " + (err.description || "No Ads Available right now."));
+            alert("Ad Error: " + (err.description || "Ads not available."));
         });
     }
 
-    // Snow script
+    // Snow logic
     const canvas=document.getElementById("snowCanvas");const ctx=canvas.getContext("2d");let f=[];function res(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}res();window.onresize=res;for(let i=0;i<40;i++)f.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,s:Math.random()*15+10,sp:Math.random()*0.5+0.2,o:Math.random()*0.3});function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);f.forEach(p=>{ctx.fillStyle=`rgba(255,255,255,${p.o})`;ctx.font=p.s+"px Arial";ctx.fillText("❄",p.x,p.y);p.y+=p.sp;if(p.y>canvas.height)p.y=-20});requestAnimationFrame(draw)}draw();
 </script>
 </body>
-</html>
+    </html>
+    
