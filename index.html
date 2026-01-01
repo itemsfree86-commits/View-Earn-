@@ -4,10 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Earn - Home</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    <script>eruda.init();</script>
+    
     <script src="https://adsgram.ai/sdk.js"></script>
+    
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI', sans-serif}
         body{background:#0b0614;color:#fff;overflow-x:hidden; min-height: 100vh;}
@@ -34,8 +40,8 @@
             cursor:pointer; box-shadow:0 5px 15px rgba(180,0,255,0.3); transition: 0.3s;
         }
         .btn:active { transform: scale(0.96); }
+        .btn:disabled { background: #444; cursor: not-allowed; }
 
-        /* Badi Bottom Nav */
         .bottom-nav{
             position:fixed;bottom:0;left:0;width:100%;height:80px;background:#0f0719;
             display:flex;justify-content:space-around;align-items:center;z-index:10000;
@@ -65,8 +71,8 @@
         </div>
 
         <div class="glass-card">
-            <button class="btn" onclick="showAdsgram()">SHOW AD & EARN +10</button>
-            <p style="margin-top:10px; font-size:10px; opacity:0.4;">If balance is wrong, refresh once.</p>
+            <button class="btn" id="adBtn" onclick="showAdsgram()">SHOW AD & EARN +10</button>
+            <p id="statusMsg" style="margin-top:10px; font-size:11px; font-weight:bold; color:#ff9800">Checking Ads Connection...</p>
         </div>
     </div>
 
@@ -78,58 +84,85 @@
     </nav>
 
 <script>
+    // 1. Firebase Config
     const firebaseConfig = { databaseURL: "https://watch2earn-e5ab2-default-rtdb.firebaseio.com/" };
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    // Aapki UID yahan se aayegi
     let uid = localStorage.getItem("uid") || "VE" + Math.floor(Math.random() * 99999);
     localStorage.setItem("uid", uid);
 
-    // --- AUTOMATIC RESET LOGIC (Scientific notation aur bade numbers hatane ke liye) ---
-    // Agar balance 1,000,000,000 se upar hai toh reset kar dega (Testing ke liye)
-    db.ref("users/" + uid).once("value", snap => {
-        const bal = snap.val()?.balance || 0;
-        if (bal > 999999999 || bal < -1) { 
-            db.ref("users/" + uid).update({ balance: 0, earned: 0, views: 0 });
-            console.log("Extreme values detected. Resetting to 0...");
-        }
-    });
-
-    // Real-time Update
+    // 2. Real-time Database Sync
     db.ref("users/" + uid).on("value", snap => {
-        const d = snap.val() || {};
-        const balance = d.balance || 0;
+        const d = snap.val() || {balance: 0, earned: 0, referrals: 0, views: 0};
         
-        document.getElementById("mainBalance").innerText = Math.floor(balance);
+        // Scientific notation fix aur reset logic display ke liye
+        let currentBalance = d.balance || 0;
+        if (currentBalance > 1000000000 || currentBalance < -1) {
+            currentBalance = 0; // Display 0 if corrupted
+        }
+
+        document.getElementById("mainBalance").innerText = Math.floor(currentBalance);
         document.getElementById("totalEarned").innerText = d.earned || 0;
         document.getElementById("refCount").innerText = d.referrals || 0;
         document.getElementById("todayViews").innerText = d.views || 0;
-
-        // Scientific notation fix: Math.max(0, ...) negative values rokne ke liye
-        let displayUSD = (Math.max(0, balance) * 0.000001).toFixed(6);
+        
+        let displayUSD = (Math.max(0, currentBalance) * 0.000001).toFixed(6);
         document.getElementById("usdBalance").innerText = "$" + displayUSD;
     });
 
+    // 3. Adsgram SDK Checker (Green means OK, Red means Blocked)
+    function checkAdsgramStatus() {
+        const msg = document.getElementById("statusMsg");
+        if (window.Adsgram) {
+            msg.innerText = "● ADS SYSTEM READY";
+            msg.style.color = "#7dffb3";
+            console.log("Adsgram SDK Loaded.");
+        } else {
+            msg.innerText = "● ADS SYSTEM BLOCKED (Check Domain Whitelist)";
+            msg.style.color = "#ff5252";
+            setTimeout(checkAdsgramStatus, 2000);
+        }
+    }
+    checkAdsgramStatus();
+
+    // 4. Show Ad Function
     function showAdsgram() {
-        const AdController = window.Adsgram.init({ blockId: "int-20375" }); 
+        const btn = document.getElementById("adBtn");
+        const msg = document.getElementById("statusMsg");
+
+        if (!window.Adsgram) {
+            alert("Adsgram SDK load nahi hua. Check karein ki aapka Domain Adsgram Dashboard mein Whitelisted hai.");
+            return;
+        }
+
+        const AdController = window.Adsgram.init({ blockId: "int-20375", debug: true }); 
         
-        AdController.show().then(() => {
-            db.ref("users/" + uid).transaction(current => {
-                if (current) {
-                    current.balance = (current.balance || 0) + 10;
-                    current.earned = (current.earned || 0) + 10;
-                    current.views = (current.views || 0) + 1;
+        btn.disabled = true;
+        msg.innerText = "Requesting Ad...";
+
+        AdController.show().then((result) => {
+            // Success: Transaction start
+            db.ref("users/" + uid).transaction(c => {
+                if (c) {
+                    c.balance = (c.balance || 0) + 10;
+                    c.earned = (c.earned || 0) + 10;
+                    c.views = (c.views || 0) + 1;
                 }
-                return current;
+                return c;
             });
-            alert("Reward: +10 Coins Added!");
+            alert("Success! +10 Coins Mil Gaye.");
+            msg.innerText = "● ADS SYSTEM READY";
+            btn.disabled = false;
         }).catch((err) => {
-            alert("Ad not loaded yet. Try again!");
+            console.error("Adsgram Error:", err);
+            alert("Ad Error: " + (err.description || "No ads available. Try after 5 mins."));
+            msg.innerText = "● ADS SYSTEM READY";
+            btn.disabled = false;
         });
     }
 
-    // Snow Script
+    // Snow script
     const canvas = document.getElementById("snowCanvas");
     const ctx = canvas.getContext("2d");
     let flakes = [];
@@ -147,4 +180,4 @@
     } draw();
 </script>
 </body>
-</html>
+    </html>
