@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="referrer" content="no-referrer-when-downgrade"> <title>View Earn - Home</title>
+    <title>View Earn - Home</title>
     
-    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-    <script>eruda.init();</script>
-    
-    <script src="https://adsgram.ai/sdk.js"></script>
+    <script src="https://adsgram.ai/sdk.js" data-domain="itemsfree86-commits.github.io"></script>
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -20,6 +17,8 @@
         #snowCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
         .app{position:relative;z-index:10;padding:20px;padding-bottom:120px;}
         .glass-card{ background: rgba(25, 12, 45, 0.6); backdrop-filter: blur(10px); border-radius: 24px; padding: 20px; margin-bottom: 18px; border: 1px solid rgba(211, 107, 255, 0.2); text-align:center; }
+        .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .stat h2{color:#7dffb3;font-size:24px;}
         .btn{ width:100%;padding:18px;border:none;border-radius:18px;font-size:16px; font-weight:bold;color:#fff;background:linear-gradient(135deg,#a400ff,#ff00cc); cursor:pointer; }
         .bottom-nav{ position:fixed;bottom:0;left:0;width:100%;height:80px;background:#0f0719; display:flex;justify-content:space-around;align-items:center;z-index:10000; border-top:1px solid rgba(211,107,255,0.15) }
         .bottom-nav a{text-decoration:none;color:#777;text-align:center;flex:1}
@@ -35,9 +34,13 @@
             <p style="font-size:12px; opacity:0.6;">USDT BALANCE</p>
             <h2 id="usdBalance" style="color:#7dffb3; font-size:30px">$0.000000</h2>
         </div>
+        <div class="stats">
+            <div class="glass-card stat"><h2 id="mainBalance">0</h2><p style="font-size:10px; opacity:0.6;">COINS</p></div>
+            <div class="glass-card stat"><h2 id="totalEarned">0</h2><p style="font-size:10px; opacity:0.6;">TOTAL</p></div>
+        </div>
         <div class="glass-card">
             <button class="btn" id="adBtn" onclick="showAdsgram()">SHOW AD & EARN +10</button>
-            <p id="statusMsg" style="margin-top:10px; font-size:11px; font-weight:bold; color:#ff9800">Connecting to Adsgram...</p>
+            <p id="statusMsg" style="margin-top:10px; font-size:11px; font-weight:bold; color:#ff9800;">Connecting to Adsgram...</p>
         </div>
     </div>
 
@@ -52,54 +55,55 @@
     const firebaseConfig = { databaseURL: "https://watch2earn-e5ab2-default-rtdb.firebaseio.com/" };
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    
     let uid = localStorage.getItem("uid") || "VE" + Math.floor(Math.random() * 99999);
     localStorage.setItem("uid", uid);
 
     db.ref("users/" + uid).on("value", snap => {
         const d = snap.val() || {balance: 0};
+        document.getElementById("mainBalance").innerText = Math.floor(d.balance || 0);
+        document.getElementById("totalEarned").innerText = d.earned || 0;
         document.getElementById("usdBalance").innerText = "$" + (Math.max(0, d.balance) * 0.000001).toFixed(6);
     });
 
-    // Check if SDK is loaded
-    function checkSDK() {
+    // --- CHECK SYSTEM ---
+    function checkConnection() {
         const msg = document.getElementById("statusMsg");
         if (window.Adsgram) {
-            msg.innerText = "● SYSTEM READY";
+            msg.innerText = "● SYSTEM READY (SECURE)";
             msg.style.color = "#7dffb3";
         } else {
-            msg.innerText = "● RECONNECTING...";
-            setTimeout(checkSDK, 2000);
+            msg.innerText = "● RECONNECTING TO ADSGRAM...";
+            msg.style.color = "#ff9800";
+            setTimeout(checkConnection, 3000);
         }
     }
-    checkSDK();
+    checkConnection();
 
     function showAdsgram() {
         if (!window.Adsgram) {
-            alert("Adsgram not loaded. Please try opening in Telegram directly.");
+            alert("Adsgram SDK load nahi ho raha. Ek baar bot restart karein.");
             return;
         }
 
-        // Dashboard wala exact Block ID
-        const AdController = window.Adsgram.init({ 
-            blockId: "int-20375",
-            debug: true 
-        }); 
+        const AdController = window.Adsgram.init({ blockId: "int-20375" }); 
         
         AdController.show().then(() => {
             db.ref("users/" + uid).transaction(c => {
                 if (c) {
                     c.balance = (c.balance || 0) + 10;
+                    c.earned = (c.earned || 0) + 10;
                 }
                 return c;
             });
-            alert("Reward Added!");
+            alert("Success! +10 Coins Added.");
         }).catch((err) => {
-            console.log("Detailed Error:", err);
-            alert("Ad Error: " + (err.description || "No Fill / Blocked"));
+            console.error(err);
+            alert("Ad Error: " + (err.description || "Check Domain Whitelist in Adsgram Dashboard."));
         });
     }
 
-    // Snow script
+    // Snow script (same)
     const canvas=document.getElementById("snowCanvas");const ctx=canvas.getContext("2d");let f=[];function res(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}res();window.onresize=res;for(let i=0;i<40;i++)f.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,s:Math.random()*15+10,sp:Math.random()*0.5+0.2,o:Math.random()*0.3});function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);f.forEach(p=>{ctx.fillStyle=`rgba(255,255,255,${p.o})`;ctx.font=p.s+"px Arial";ctx.fillText("❄",p.x,p.y);p.y+=p.sp;if(p.y>canvas.height)p.y=-20});requestAnimationFrame(draw)}draw();
 </script>
 </body>
