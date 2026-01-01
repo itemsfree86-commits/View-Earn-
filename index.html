@@ -3,57 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Earn - Dashboard</title>
+    <title>View Earn - Home</title>
     <script src="https://adsgram.ai/sdk.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI', sans-serif}
-        body{background:#0b0614;color:#fff;overflow-x:hidden;min-height:100vh}
-        #snowCanvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999}
+        body{background:#0b0614;color:#fff;overflow-x:hidden; min-height: 100vh;}
+        #snowCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
         
-        /* Animations */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .app{position:relative;z-index:10;padding:20px;padding-bottom:120px;}
-        .animate-card { animation: fadeInUp 0.6s ease backwards; }
-        
-        h1{text-align:center;font-size:32px;color:#d36bff;text-shadow:0 0 10px rgba(180,0,255,0.4);margin-bottom:20px}
-        .card{background:#190c2d;border-radius:20px;padding:20px;margin-bottom:18px;border:1px solid rgba(211,107,255,0.2);text-align:center; transition: 0.3s;}
-        .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-        .stat h2{color:#7dffb3;font-size:22px}
-        
-        .btn{width:100%;padding:16px;border:none;border-radius:16px;font-size:16px;font-weight:bold;color:#fff;background:linear-gradient(135deg,#a400ff,#ff00cc);cursor:pointer; transition: 0.3s;}
-        .btn:active{transform: scale(0.95);}
+        /* Glass Design & Animations */
+        .app{position:relative;z-index:10;padding:20px;padding-bottom:120px; animation: fadeIn 0.8s ease-out;}
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        .bottom-nav{position:fixed;bottom:0;left:0;width:100%;height:70px;background:#0f0719;display:flex;justify-content:space-around;align-items:center;z-index:10000;border-top:1px solid rgba(211,107,255,0.15)}
-        .bottom-nav a{text-decoration:none;color:#666;text-align:center;flex:1;font-size:10px}
+        h1{text-align:center;font-size:32px;color:#d36bff;text-shadow:0 0 10px rgba(180,0,255,0.4);margin-bottom:20px}
+        
+        .glass-card{
+            background: rgba(25, 12, 45, 0.6); backdrop-filter: blur(10px);
+            border-radius: 24px; padding: 20px; margin-bottom: 18px; 
+            border: 1px solid rgba(211, 107, 255, 0.2); text-align:center;
+        }
+        
+        .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .stat h2{color:#7dffb3;font-size:24px;margin-bottom:4px}
+        .stat p{font-size:12px;opacity:0.6;text-transform:uppercase}
+        
+        .btn{
+            width:100%;padding:18px;border:none;border-radius:18px;font-size:16px;
+            font-weight:bold;color:#fff;background:linear-gradient(135deg,#a400ff,#ff00cc);
+            cursor:pointer; box-shadow:0 5px 15px rgba(180,0,255,0.3); transition: 0.3s;
+        }
+        .btn:active { transform: scale(0.96); }
+
+        /* Big Bottom Nav */
+        .bottom-nav{
+            position:fixed;bottom:0;left:0;width:100%;height:80px;background:#0f0719;
+            display:flex;justify-content:space-around;align-items:center;z-index:10000;
+            border-top:1px solid rgba(211,107,255,0.15)
+        }
+        .bottom-nav a{text-decoration:none;color:#777;text-align:center;flex:1}
         .bottom-nav a.active{color:#d36bff}
-        .bottom-nav i{display:block;font-size:20px;margin-bottom:4px}
+        .bottom-nav i{display:block;font-size:24px;margin-bottom:6px}
+        .bottom-nav span{font-size:12px}
     </style>
 </head>
 <body>
     <canvas id="snowCanvas"></canvas>
     <div class="app">
-        <h1 class="animate-card" style="animation-delay: 0.1s">View Earn</h1>
+        <h1>View Earn</h1>
         
-        <div class="card animate-card" style="animation-delay: 0.2s">
-            <p style="font-size:11px;opacity:0.5">USDT BALANCE</p>
-            <h2 id="usdBalance" style="color:#7dffb3;font-size:28px">$0.000000</h2>
+        <div class="glass-card">
+            <p style="font-size:12px; opacity:0.6; margin-bottom:5px">USDT BALANCE</p>
+            <h2 id="usdBalance" style="color:#7dffb3; font-size:30px">$0.000000</h2>
         </div>
 
         <div class="stats">
-            <div class="card stat animate-card" style="animation-delay: 0.3s"><h2 id="mainBalance">0</h2><p>Coins</p></div>
-            <div class="card stat animate-card" style="animation-delay: 0.4s"><h2 id="totalEarned">0</h2><p>Total</p></div>
-            <div class="card stat animate-card" style="animation-delay: 0.5s"><h2 id="refCount">0</h2><p>Refs</p></div>
-            <div class="card stat animate-card" style="animation-delay: 0.6s"><h2 id="todayViews">0</h2><p>Views</p></div>
+            <div class="glass-card stat"><h2 id="mainBalance">0</h2><p>Coins</p></div>
+            <div class="glass-card stat"><h2 id="totalEarned">0</h2><p>Total</p></div>
+            <div class="glass-card stat"><h2 id="refCount">0</h2><p>Refs</p></div>
+            <div class="glass-card stat"><h2 id="todayViews">0</h2><p>Views</p></div>
         </div>
 
-        <div class="card animate-card" style="animation-delay: 0.7s">
-            <button class="btn" onclick="showAdsgram()">WATCH ADS +10</button>
+        <div class="glass-card">
+            <button class="btn" onclick="showAdsgram()">SHOW AD & EARN +10</button>
         </div>
     </div>
 
@@ -65,37 +78,55 @@
     </nav>
 
 <script>
-    const firebaseConfig={databaseURL:"https://watch2earn-e5ab2-default-rtdb.firebaseio.com/"};
-    if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
-    const db=firebase.database();
-    let uid=localStorage.getItem("uid")||"VE"+Math.floor(Math.random()*99999);
-    localStorage.setItem("uid",uid);
+    const firebaseConfig = { databaseURL: "https://watch2earn-e5ab2-default-rtdb.firebaseio.com/" };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    let uid = localStorage.getItem("uid") || "VE" + Math.floor(Math.random() * 99999);
+    localStorage.setItem("uid", uid);
 
-    db.ref("users/"+uid).on("value",snap=>{
-        const d=snap.val()||{}; const b=d.balance||0;
-        document.getElementById("mainBalance").innerText=b;
-        document.getElementById("totalEarned").innerText=d.earned||0;
-        document.getElementById("refCount").innerText=d.referrals||0;
-        document.getElementById("todayViews").innerText=d.views||0;
-        document.getElementById("usdBalance").innerText="$"+(b*0.000001).toFixed(6);
+    db.ref("users/" + uid).on("value", snap => {
+        const d = snap.val() || {};
+        const balance = d.balance || 0;
+        document.getElementById("mainBalance").innerText = balance;
+        document.getElementById("totalEarned").innerText = d.earned || 0;
+        document.getElementById("refCount").innerText = d.referrals || 0;
+        document.getElementById("todayViews").innerText = d.views || 0;
+        document.getElementById("usdBalance").innerText = "$" + (balance * 0.000001).toFixed(6);
     });
 
-    function showAdsgram(){
-        const AdController = window.Adsgram.init({blockId:"20085"});
-        Ad.show().then(()=>{
-            db.ref("users/"+uid).transaction(c=>{if(c){c.balance=(c.balance||0)+10;c.earned=(c.earned||0)+10;c.views=(c.views||0)+1;}return c;});
-        }).catch(()=>{});
+    // Adsgram Interstitial Call
+    function showAdsgram() {
+        // Nayi Block ID use kar raha hoon
+        const AdController = window.Adsgram.init({ blockId: "int-20375" }); 
+        
+        AdController.show().then(() => {
+            // Ad dikh gaya, rewards de do
+            db.ref("users/" + uid).transaction(current => {
+                if (current) {
+                    current.balance = (current.balance || 0) + 10;
+                    current.earned = (current.earned || 0) + 10;
+                    current.views = (current.views || 0) + 1;
+                }
+                return current;
+            });
+            alert("Reward added: 10 Coins!");
+        }).catch((err) => {
+            console.error(err);
+            alert("Ad failed or not available.");
+        });
     }
 
-    // SNOW (Badi but Lite)
-    const canvas=document.getElementById("snowCanvas"); const ctx=canvas.getContext("2d");
-    let f=[]; function res(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
-    res(); window.onresize=res;
-    for(let i=0;i<40;i++)f.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,s:Math.random()*20+10,sp:Math.random()*0.5+0.2,o:Math.random()*0.3+0.1});
-    function draw(){
+    // Medium Lite Snow
+    const canvas = document.getElementById("snowCanvas");
+    const ctx = canvas.getContext("2d");
+    let flakes = [];
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resize(); window.onresize = resize;
+    for(let i=0;i<40;i++) flakes.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, s:Math.random()*15+10, sp:Math.random()*0.6+0.2, o:Math.random()*0.3});
+    function draw() {
         ctx.clearRect(0,0,canvas.width,canvas.height);
-        f.forEach(p=>{
-            ctx.fillStyle=`rgba(255,255,255,${p.o})`; 
+        flakes.forEach(p=>{
+            ctx.fillStyle=`rgba(255,255,255,${p.o})`;
             ctx.font=p.s+"px Arial"; ctx.fillText("❄",p.x,p.y);
             p.y+=p.sp; if(p.y>canvas.height)p.y=-20;
         });
@@ -103,4 +134,4 @@
     } draw();
 </script>
 </body>
-</html>
+    </html>
