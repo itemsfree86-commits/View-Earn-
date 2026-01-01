@@ -13,7 +13,6 @@
         body{background:#0b0614;color:#fff;overflow-x:hidden; min-height: 100vh;}
         #snowCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
         
-        /* Glass Design & Animations */
         .app{position:relative;z-index:10;padding:20px;padding-bottom:120px; animation: fadeIn 0.8s ease-out;}
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -36,7 +35,7 @@
         }
         .btn:active { transform: scale(0.96); }
 
-        /* Big Bottom Nav */
+        /* Badi Bottom Nav */
         .bottom-nav{
             position:fixed;bottom:0;left:0;width:100%;height:80px;background:#0f0719;
             display:flex;justify-content:space-around;align-items:center;z-index:10000;
@@ -67,6 +66,7 @@
 
         <div class="glass-card">
             <button class="btn" onclick="showAdsgram()">SHOW AD & EARN +10</button>
+            <p style="margin-top:10px; font-size:10px; opacity:0.4;">If balance is wrong, refresh once.</p>
         </div>
     </div>
 
@@ -81,26 +81,40 @@
     const firebaseConfig = { databaseURL: "https://watch2earn-e5ab2-default-rtdb.firebaseio.com/" };
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    
+    // Aapki UID yahan se aayegi
     let uid = localStorage.getItem("uid") || "VE" + Math.floor(Math.random() * 99999);
     localStorage.setItem("uid", uid);
 
+    // --- AUTOMATIC RESET LOGIC (Scientific notation aur bade numbers hatane ke liye) ---
+    // Agar balance 1,000,000,000 se upar hai toh reset kar dega (Testing ke liye)
+    db.ref("users/" + uid).once("value", snap => {
+        const bal = snap.val()?.balance || 0;
+        if (bal > 999999999 || bal < -1) { 
+            db.ref("users/" + uid).update({ balance: 0, earned: 0, views: 0 });
+            console.log("Extreme values detected. Resetting to 0...");
+        }
+    });
+
+    // Real-time Update
     db.ref("users/" + uid).on("value", snap => {
         const d = snap.val() || {};
         const balance = d.balance || 0;
-        document.getElementById("mainBalance").innerText = balance;
+        
+        document.getElementById("mainBalance").innerText = Math.floor(balance);
         document.getElementById("totalEarned").innerText = d.earned || 0;
         document.getElementById("refCount").innerText = d.referrals || 0;
         document.getElementById("todayViews").innerText = d.views || 0;
-        document.getElementById("usdBalance").innerText = "$" + (balance * 0.000001).toFixed(6);
+
+        // Scientific notation fix: Math.max(0, ...) negative values rokne ke liye
+        let displayUSD = (Math.max(0, balance) * 0.000001).toFixed(6);
+        document.getElementById("usdBalance").innerText = "$" + displayUSD;
     });
 
-    // Adsgram Interstitial Call
     function showAdsgram() {
-        // Nayi Block ID use kar raha hoon
         const AdController = window.Adsgram.init({ blockId: "int-20375" }); 
         
         AdController.show().then(() => {
-            // Ad dikh gaya, rewards de do
             db.ref("users/" + uid).transaction(current => {
                 if (current) {
                     current.balance = (current.balance || 0) + 10;
@@ -109,14 +123,13 @@
                 }
                 return current;
             });
-            alert("Reward added: 10 Coins!");
+            alert("Reward: +10 Coins Added!");
         }).catch((err) => {
-            console.error(err);
-            alert("Ad failed or not available.");
+            alert("Ad not loaded yet. Try again!");
         });
     }
 
-    // Medium Lite Snow
+    // Snow Script
     const canvas = document.getElementById("snowCanvas");
     const ctx = canvas.getContext("2d");
     let flakes = [];
@@ -134,4 +147,4 @@
     } draw();
 </script>
 </body>
-    </html>
+</html>
