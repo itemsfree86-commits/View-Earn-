@@ -22,10 +22,16 @@
         }
 
         h1{color:#d36bff; font-size:32px; margin-bottom:20px; text-shadow:0 0 10px rgba(180,0,255,0.4)}
-        .ref-link-display{
-            font-size:16px; color:#fff; font-weight:bold; letter-spacing:1px; 
-            margin:15px 0; padding:10px; background:rgba(0,0,0,0.2); border-radius:8px;
-            overflow-wrap: break-word; /* Long links ke liye */
+        
+        .ref-link-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+            border: 1px dashed rgba(211, 107, 255, 0.5);
+            font-size: 14px;
+            word-break: break-all;
+            color: #7dffb3;
         }
         
         .btn{
@@ -51,15 +57,23 @@
     <div class="app">
         <h1>Refer & Earn</h1>
         <div class="glass-card">
-            <p style="opacity:0.7">Share your link and get 500 coins per referral!</p>
-            <div class="ref-link-display" id="refLink">Loading Your Link...</div>
-            <button class="btn" onclick="copyRef()">COPY LINK</button>
+            <p style="opacity:0.7">Invite friends and get 500 coins instantly!</p>
+            <div class="ref-link-box" id="refLink">Generating Link...</div>
+            <button class="btn" onclick="copyRef()">COPY REFERRAL LINK</button>
         </div>
         
         <div class="glass-card">
-            <h3 style="margin-bottom:10px">Your Stats</h3>
-            <p>Total Referrals: <span id="totalRef" style="color:#7dffb3;font-weight:bold">0</span></p>
-            <p style="margin-top:8px;">Referral Earnings: <span id="refEarnings" style="color:#7dffb3;font-weight:bold">0 Coins</span></p>
+            <h3 style="margin-bottom:15px; color:#d36bff">Your Network</h3>
+            <div style="display:flex; justify-content:space-around">
+                <div>
+                    <p style="font-size:12px; opacity:0.6">REFERRALS</p>
+                    <h2 id="totalRef" style="color:#7dffb3">0</h2>
+                </div>
+                <div>
+                    <p style="font-size:12px; opacity:0.6">EARNINGS</p>
+                    <h2 id="refEarnings" style="color:#7dffb3">0</h2>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -71,36 +85,49 @@
     </nav>
 
 <script>
+    // 1. Firebase Setup
     const firebaseConfig={databaseURL:"https://watch2earn-e5ab2-default-rtdb.firebaseio.com/"};
     if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
     const db=firebase.database(); 
-    const uid=localStorage.getItem("uid");
 
-    // Yahan "YOUR_BOT_USERNAME" ki jagah apne bot ka username daalo (without @)
-    const BOT_USERNAME = "YourBotName"; // For example: "ViewEarnBot"
+    // 2. BOT CONFIGURATION (IMPORTANT)
+    // Yahan apne bot ka username likho bina @ ke
+    const BOT_USERNAME = "BestViewToEarnBot"; 
 
-    const botLink = `https://t.me/${bestviewearnonads_bot}?start=${uid}`;
-    document.getElementById("refLink").innerText = botLink;
+    function initReferral() {
+        const uid = localStorage.getItem("uid");
+        
+        if(!uid) {
+            document.getElementById("refLink").innerText = "Error: UID not found. Re-open Home.";
+            return;
+        }
 
-    db.ref("users/"+uid).on("value", snap => {
-        const userData = snap.val() || {};
-        document.getElementById("totalRef").innerText = userData.referrals || 0;
-        // Assuming referral earnings are separate or part of total earned
-        document.getElementById("refEarnings").innerText = (userData.referral_earnings || 0) + " Coins";
-    });
+        // Generate Bot Link
+        const fullLink = `https://t.me/${bestviewearnonads_bot}?start=${uid}`;
+        document.getElementById("refLink").innerText = fullLink;
 
-    function copyRef() {
-        navigator.clipboard.writeText(botLink)
-            .then(() => {
-                alert("Referral link copied to clipboard!");
-            })
-            .catch(err => {
-                console.error('Failed to copy text: ', err);
-                alert("Failed to copy link. Please copy manually.");
-            });
+        // Load Real-time Stats
+        db.ref("users/" + uid).on("value", snap => {
+            const val = snap.val() || {};
+            document.getElementById("totalRef").innerText = val.referrals || 0;
+            document.getElementById("refEarnings").innerText = (val.referral_earnings || 0);
+        });
     }
 
-    // Snow Lite Script
+    // Run on load
+    window.onload = initReferral;
+
+    // 3. Copy Function
+    function copyRef() {
+        const link = document.getElementById("refLink").innerText;
+        if(link.includes("Generating") || link.includes("Error")) return;
+
+        navigator.clipboard.writeText(link).then(() => {
+            alert("Copied! Now share it with friends.");
+        });
+    }
+
+    // 4. Lite Snow Effect
     const canvas=document.getElementById("snowCanvas"); const ctx=canvas.getContext("2d");
     let flakes=[]; function res(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
     res(); window.onresize=res;
@@ -116,4 +143,5 @@
     } draw();
 </script>
 </body>
-</html>
+    </html>
+    
