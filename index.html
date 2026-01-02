@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Earn - Home</title>
-    
-    <script src="https://adsgram.ai/sdk.js"></script>
-    
+    <title>Home - View Earn</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -14,76 +11,59 @@
     <style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI', sans-serif}
         body{background:#0b0614;color:#fff;overflow-x:hidden; min-height: 100vh;}
-        #snowCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+        
+        /* Snowfall Foreground */
+        #snowCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 99999; }
+        
         .app{position:relative;z-index:10;padding:20px;padding-bottom:120px;}
         
-        /* Main Heading */
-        .header-title { text-align:center; color:#d36bff; margin-bottom:20px; font-size: 28px; font-weight:800; text-shadow: 0 0 15px rgba(211,107,255,0.4); }
-
-        /* Balance Card */
         .glass-card{ 
-            background: rgba(25, 12, 45, 0.6); 
-            backdrop-filter: blur(12px); 
-            border-radius: 24px; 
-            padding: 20px; 
-            margin-bottom: 18px; 
-            border: 1px solid rgba(211, 107, 255, 0.2); 
-            text-align:center; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            background: rgba(25, 12, 45, 0.6); backdrop-filter: blur(12px); 
+            border-radius: 24px; padding: 25px; margin-bottom: 18px; 
+            border: 1px solid rgba(211, 107, 255, 0.2); text-align:center;
         }
 
-        /* Stats Grid */
-        .stats-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
-        .stat-box { padding: 15px !important; }
-        .stat-box h2{ color:#7dffb3; font-size:24px; margin-bottom:4px; }
-        .stat-box p{ font-size:10px; opacity:0.6; text-transform:uppercase; letter-spacing:1px; color: #bbb; }
+        .balance-title { font-size: 12px; opacity: 0.6; letter-spacing: 1px; margin-bottom: 5px; }
+        .balance-value { font-size: 36px; font-weight: 800; color: #d36bff; text-shadow: 0 0 15px rgba(211, 107, 255, 0.3); }
+        
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .stat-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.1); }
+        .stat-item i { font-size: 20px; color: #7dffb3; margin-bottom: 8px; }
 
-        /* Ad Button */
-        .btn{ 
-            width:100%; padding:18px; border:none; border-radius:18px; 
-            font-size:17px; font-weight:bold; color:#fff; 
-            background: linear-gradient(135deg,#a400ff,#ff00cc); 
-            cursor:pointer; box-shadow:0 8px 25px rgba(180,0,255,0.4);
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .btn:active{ transform: scale(0.95); }
-        .btn:disabled{ background: #2a1b3d; box-shadow: none; opacity: 0.6; cursor: not-allowed; }
-
-        #statusMsg{ margin-top:12px; font-size:11px; font-weight:bold; letter-spacing: 0.5px; }
-
-        /* Bottom Navigation */
-        .bottom-nav{ 
-            position:fixed; bottom:0; left:0; width:100%; height:80px; 
-            background: rgba(15, 7, 25, 0.95); backdrop-filter: blur(10px);
-            display:flex; justify-content:space-around; 
-            align-items:center; z-index:10000; border-top:1px solid rgba(211,107,255,0.2);
-        }
-        .bottom-nav a{ text-decoration:none; color:#666; text-align:center; flex:1; font-size:11px; transition: 0.3s; }
+        /* Bottom Nav */
+        .bottom-nav{ position:fixed; bottom:0; left:0; width:100%; height:80px; background:#0f0719; display:flex; justify-content:space-around; align-items:center; z-index:10000; border-top:1px solid rgba(211,107,255,0.15);}
+        .bottom-nav a{ text-decoration:none; color:#777; text-align:center; flex:1; font-size:11px; transition: 0.3s; }
         .bottom-nav a.active{ color:#d36bff; }
-        .bottom-nav i{ display:block; font-size:22px; margin-bottom:5px; }
+        .bottom-nav i{ display:block; font-size:22px; margin-bottom:4px; }
     </style>
 </head>
 <body>
     <canvas id="snowCanvas"></canvas>
     
     <div class="app">
-        <h1 class="header-title">View Earn</h1>
-        
+        <h1 style="text-align:center; color:#d36bff; margin-bottom:20px; font-weight:800;">View Earn</h1>
+
         <div class="glass-card">
-            <p style="font-size:12px; opacity:0.7; margin-bottom:5px; color:#d36bff;">USDT BALANCE</p>
-            <h2 id="usdBalance" style="color:#7dffb3; font-size:34px; letter-spacing:1px;">$0.000000</h2>
+            <p class="balance-title">YOUR TOTAL BALANCE</p>
+            <div class="balance-value" id="userBalance">0</div>
+            <p style="font-size:13px; color:#7dffb3; margin-top:5px;" id="usdValue">$0.0000</p>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <i class="fa-solid fa-bolt"></i>
+                    <p style="font-size:10px; opacity:0.6;">Tasks Done</p>
+                    <p id="tasksCount" style="font-weight:bold;">0</p>
+                </div>
+                <div class="stat-item">
+                    <i class="fa-solid fa-share-nodes"></i>
+                    <p style="font-size:10px; opacity:0.6;">Referrals</p>
+                    <p id="referCount" style="font-weight:bold;">0</p>
+                </div>
+            </div>
         </div>
 
-        <div class="stats-grid">
-            <div class="glass-card stat-box"><h2 id="mainBalance">0</h2><p>Coins</p></div>
-            <div class="glass-card stat-box"><h2 id="totalEarned">0</h2><p>Total</p></div>
-            <div class="glass-card stat-box"><h2 id="refStats">0</h2><p>Refs</p></div>
-            <div class="glass-card stat-box"><h2 id="viewStats">0</h2><p>Views</p></div>
-        </div>
-
-        <div class="glass-card" style="margin-top:10px;">
-            <button class="btn" id="adBtn" onclick="showAdsgram()" disabled>LOADING SYSTEM...</button>
-            <p id="statusMsg" style="color:#ff9800;">● INITIALIZING SDK...</p>
+        <div class="glass-card" style="padding:15px; background:linear-gradient(135deg, rgba(164,0,255,0.1), rgba(255,0,204,0.1));">
+            <p style="font-size:13px;">Welcome back, <span id="userName" style="color:var(--accent)">User</span>!</p>
         </div>
     </div>
 
@@ -95,62 +75,76 @@
     </nav>
 
 <script>
-    // 1. Firebase Configuration
+    // Firebase Config
     const firebaseConfig = { databaseURL: "https://watch2earn-e5ab2-default-rtdb.firebaseio.com/" };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    
+    // SDK Loading Fix: Initialization check
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
     const db = firebase.database();
     
-    let uid = localStorage.getItem("uid") || "VE" + Math.floor(Math.random() * 99999);
-    localStorage.setItem("uid", uid);
-
-    // 2. Data Synchronization
-    db.ref("users/" + uid).on("value", snap => {
-        const d = snap.val() || {balance: 0, earned: 0, refs: 0, views: 0};
-        document.getElementById("mainBalance").innerText = Math.floor(d.balance || 0);
-        document.getElementById("totalEarned").innerText = d.earned || 0;
-        document.getElementById("refStats").innerText = d.refs || 0;
-        document.getElementById("viewStats").innerText = d.views || 0;
-        document.getElementById("usdBalance").innerText = "$" + (Math.max(0, d.balance) * 0.000001).toFixed(6);
-    });
-
-    // 3. Adsgram System Check
-    function checkSystem() {
-        const btn = document.getElementById("adBtn");
-        const msg = document.getElementById("statusMsg");
-        
-        if (window.Adsgram) {
-            btn.disabled = false;
-            btn.innerText = "SHOW AD & EARN +10";
-            msg.innerText = "● SYSTEM READY";
-            msg.style.color = "#7dffb3";
-        } else {
-            // Keep checking until SDK is loaded
-            setTimeout(checkSystem, 1000);
-        }
+    // User Identity
+    let uid = localStorage.getItem("uid");
+    
+    // Agar UID nahi hai toh test ke liye ya naya banane ke liye logic (optional)
+    if(!uid) {
+        uid = "user_" + Math.floor(Math.random() * 100000); // Temporary example
+        localStorage.setItem("uid", uid);
     }
-    checkSystem();
 
-    function showAdsgram() {
-        const AdController = window.Adsgram.init({ blockId: "int-20394" }); 
-        
-        AdController.show().then(() => {
-            db.ref("users/" + uid).transaction(c => {
-                if (c) {
-                    c.balance = (c.balance || 0) + 10;
-                    c.earned = (c.earned || 0) + 10;
-                    c.views = (c.views || 0) + 1;
-                }
-                return c;
-            });
-            alert("Success! +10 Coins Added.");
-        }).catch((err) => {
-            alert("Ad Error: " + (err.description || "Ads not available yet. Please check your Whitelist."));
+    let coinRate = 0;
+
+    // Fetch Coin Rate from settings
+    function syncRate() {
+        db.ref("settings/coin_rate").on("value", snap => {
+            if(snap.exists()) {
+                coinRate = parseFloat(snap.val());
+                updateUSD();
+            }
+        });
+        db.ref("settings/coins_rate").on("value", snap => {
+            if(snap.exists()) {
+                coinRate = parseFloat(snap.val());
+                updateUSD();
+            }
         });
     }
 
-    // 4. Background Snow Effect
-    const canvas=document.getElementById("snowCanvas");const ctx=canvas.getContext("2d");let f=[];function res(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}res();window.onresize=res;for(let i=0;i<40;i++)f.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,s:Math.random()*15+10,sp:Math.random()*0.5+0.2,o:Math.random()*0.3});function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);f.forEach(p=>{ctx.fillStyle=`rgba(255,255,255,${p.o})`;ctx.font=p.s+"px Arial";ctx.fillText("❄",p.x,p.y);p.y+=p.sp;if(p.y>canvas.height)p.y=-20});requestAnimationFrame(draw)}draw();
+    function updateUSD() {
+        const bal = parseInt(document.getElementById("userBalance").innerText) || 0;
+        document.getElementById("usdValue").innerText = "$" + (bal * coinRate).toFixed(5);
+    }
+
+    // Real-time Data Sync
+    if(uid) {
+        db.ref("users/" + uid).on("value", snap => {
+            if(snap.exists()) {
+                const data = snap.val();
+                document.getElementById("userBalance").innerText = (data.balance || 0).toLocaleString();
+                document.getElementById("tasksCount").innerText = data.tasks_completed || 0;
+                document.getElementById("referCount").innerText = data.referrals || 0;
+                document.getElementById("userName").innerText = data.name || "User";
+                updateUSD();
+            } else {
+                // Agar user naya hai toh database mein create karein
+                db.ref("users/" + uid).set({
+                    balance: 0,
+                    tasks_completed: 0,
+                    referrals: 0,
+                    name: "Guest User"
+                });
+            }
+        }, error => {
+            console.error("SDK Error: ", error);
+        });
+    }
+
+    syncRate();
+
+    // Snow script (Same as Withdrawal for consistency)
+    const canvas=document.getElementById("snowCanvas");const ctx=canvas.getContext("2d");let f=[];function res(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}res();window.onresize=res;for(let i=0;i<50;i++)f.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,s:Math.random()*15+10,sp:Math.random()*0.8+0.3,o:Math.random()*0.5});function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);f.forEach(p=>{ctx.fillStyle=`rgba(255,255,255,${p.o})`;ctx.font=p.s+"px Arial";ctx.fillText("❄",p.x,p.y);p.y+=p.sp;if(p.y>canvas.height)p.y=-20});requestAnimationFrame(draw)}draw();
 </script>
 </body>
-        </html>
-        
+                        </html>
+                        
