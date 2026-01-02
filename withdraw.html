@@ -3,84 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Earn - Withdraw</title>
+    <title>Withdraw - View Earn</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI', sans-serif}
-        body{background:#0b0614;color:#fff;overflow-x:hidden;min-height:100vh}
-        #snowCanvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999}
+        body{background:#0b0614;color:#fff;overflow-x:hidden; min-height: 100vh;}
         
-        .glass-card {
-            background: rgba(25, 12, 45, 0.6);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(211, 107, 255, 0.2);
-            border-radius: 24px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        }
-
-        .app{position:relative;z-index:10;padding:20px;padding-bottom:120px; animation: fadeInUp 0.8s ease;}
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        /* Snowfall Foreground */
+        #snowCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 99999; }
         
-        h1{text-align:center;color:#d36bff;font-size:32px;margin:20px 0;text-shadow:0 0 10px rgba(180,0,255,0.4)}
-        .balance-value{font-size:32px;color:#7dffb3;font-weight:bold;margin-bottom:10px;text-align:center}
-
-        .input-group{margin:15px 0;text-align:left}
-        .input-group label{display:block;margin-bottom:8px;font-size:14px;color:#d36bff}
+        .app{position:relative;z-index:10;padding:20px;padding-bottom:120px;}
         
-        input, select{
-            width:100%;padding:15px;border-radius:12px;border:1px solid rgba(211, 107, 255, 0.3);
-            background: rgba(255, 255, 255, 0.05);color:#fff;font-size:16px;outline:none
-        }
+        /* Notice Box */
+        .notice-box { background: rgba(255, 82, 82, 0.1); border: 1px solid rgba(255, 82, 82, 0.3); border-radius: 15px; padding: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .notice-box i { color: #ff5252; font-size: 16px; }
+        .notice-box p { font-size: 11px; color: #ff9999; line-height: 1.4; }
 
-        .btn{
-            width:100%;padding:18px;background:linear-gradient(135deg,#a400ff,#ff00cc);
-            color:#fff;border-radius:16px;font-weight:bold;border:none;cursor:pointer;
-            font-size:16px;box-shadow:0 5px 15px rgba(164,0,255,0.3);transition:0.3s;margin-top:10px
-        }
-
-        .bottom-nav{
-            position:fixed;bottom:0;left:0;width:100%;height:80px;background:#0f0719;
-            display:flex;justify-content:space-around;align-items:center;z-index:10000;
-            border-top:1px solid rgba(211,107,255,0.15)
-        }
-        .bottom-nav a{text-decoration:none;color:#777;text-align:center;flex:1}
-        .bottom-nav a.active{color:#d36bff}
-        .bottom-nav i{display:block;font-size:24px;margin-bottom:6px}
-        .bottom-nav span{font-size:12px}
+        .glass-card{ background: rgba(25, 12, 45, 0.6); backdrop-filter: blur(12px); border-radius: 24px; padding: 20px; margin-bottom: 18px; border: 1px solid rgba(211, 107, 255, 0.2); text-align:center;}
+        .input-box, .select-box { width:100%; padding:15px; border-radius:15px; border:1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4); color:#fff; margin:8px 0; outline:none; font-size:14px;}
+        .btn{ width:100%; padding:18px; border:none; border-radius:18px; font-size:16px; font-weight:bold; color:#fff; background: linear-gradient(135deg,#a400ff,#ff00cc); cursor:pointer; box-shadow: 0 8px 20px rgba(180,0,255,0.3); margin-top: 10px;}
+        
+        .history-item { background: rgba(255, 255, 255, 0.03); border-radius: 15px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #444;}
+        .status-pending { border-left-color: #ff9800; }
+        .status-approved { border-left-color: #7dffb3; }
+        
+        .bottom-nav{ position:fixed; bottom:0; left:0; width:100%; height:80px; background:#0f0719; display:flex; justify-content:space-around; align-items:center; z-index:10000; border-top:1px solid rgba(211,107,255,0.15);}
+        .bottom-nav a{ text-decoration:none; color:#777; text-align:center; flex:1; font-size:11px; }
+        .bottom-nav a.active{ color:#d36bff; }
+        .bottom-nav i{ display:block; font-size:22px; margin-bottom:4px; }
     </style>
 </head>
 <body>
     <canvas id="snowCanvas"></canvas>
+    
     <div class="app">
-        <h1>Withdraw</h1>
+        <h1 style="text-align:center; color:#d36bff; margin-bottom:20px; font-weight:800;">Withdraw</h1>
+
+        <div class="notice-box">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <p><b>NOTICE:</b> Min FaucetPay: 1,000 Coins. Min TON/USDT: 20,000 Coins. Payments are processed within 40 minutes - 3 hours. No VPN allowed.</p>
+        </div>
+        
         <div class="glass-card">
-            <p style="text-align:center;opacity:0.6;font-size:12px">YOUR BALANCE</p>
-            <div class="balance-value" id="userBal">0</div>
+            <p style="font-size:12px; opacity:0.6; margin-bottom:5px;">ESTIMATED RECEIVE</p>
+            <h2 id="balanceUSD" style="color:#7dffb3; font-size:32px;">$0.00000</h2>
+            <p id="balanceCoins" style="color:#d36bff; font-size:14px; margin-top:5px; font-weight:bold;">0 Coins</p>
+            <p id="rateInfo" style="font-size:10px; color:#aaa; margin-top:5px;">Connecting to Server...</p>
         </div>
 
         <div class="glass-card">
-            <div class="input-group">
-                <label>Method</label>
-                <select id="method">
-                    <option value="USDT (BEP-20)">USDT (BEP-20)</option>
-                    <option value="TON">TON</option>
-                </select>
+            <select id="method" class="select-box" onchange="toggleInputs()">
+                <option value="FaucetPay">FaucetPay (Email + Coin Name)</option>
+                <option value="TON (TON Network)">TON (TON Network)</option>
+                <option value="USDT (BEP20)">USDT (BEP20)</option>
+            </select>
+
+            <div id="faucetSection">
+                <input type="email" id="fpEmail" class="input-box" placeholder="FaucetPay Email">
+                <input type="text" id="coinName" class="input-box" placeholder="Coin Name (Ex: USDT, LTC)">
             </div>
-            <div class="input-group">
-                <label>Amount (Coins)</label>
-                <input type="number" id="withdrawAmount" placeholder="Min 500">
+            <div id="walletSection" style="display:none;">
+                <input type="text" id="walletAddr" class="input-box" placeholder="Enter Wallet Address">
             </div>
-            <div class="input-group">
-                <label>Wallet Address</label>
-                <input type="text" id="userAddress" placeholder="Enter Address">
-            </div>
-            <button class="btn" onclick="sendRequest()">WITHDRAW NOW</button>
+
+            <input type="number" id="amount" class="input-box" placeholder="Amount in Coins" oninput="liveCalc()">
+            <button class="btn" onclick="submitWithdraw()">CONFIRM WITHDRAWAL</button>
         </div>
+
+        <h3 style="margin: 15px 0 10px 5px; font-size: 16px; color: #d36bff;">Withdrawal History</h3>
+        <div id="historyList"></div>
     </div>
 
     <nav class="bottom-nav">
@@ -91,66 +84,121 @@
     </nav>
 
 <script>
-    const firebaseConfig={databaseURL:"https://watch2earn-e5ab2-default-rtdb.firebaseio.com/"};
-    if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
-    const db=firebase.database(); 
-    const uid=localStorage.getItem("uid");
+    const firebaseConfig = { databaseURL: "https://watch2earn-e5ab2-default-rtdb.firebaseio.com/" };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const uid = localStorage.getItem("uid");
 
-    db.ref("users/"+uid).on("value", snap => {
-        document.getElementById("userBal").innerText = snap.val()?.balance || 0;
-    });
+    let currentBalance = 0;
+    let coinRate = 0;
 
-    function sendRequest() {
-        const amt = parseInt(document.getElementById("withdrawAmount").value);
-        const addr = document.getElementById("userAddress").value;
-        const meth = document.getElementById("method").value;
+    // Toggle Input Boxes
+    function toggleInputs() {
+        const method = document.getElementById("method").value;
+        document.getElementById("faucetSection").style.display = (method === "FaucetPay") ? "block" : "none";
+        document.getElementById("walletSection").style.display = (method === "FaucetPay") ? "none" : "block";
+    }
 
-        if(!amt || amt < 500) { alert("Minimum 500 coins required!"); return; }
-        if(!addr || addr.trim() === "") { alert("Please enter a valid address!"); return; }
+    // Live USDT Calculation
+    function liveCalc() {
+        const amt = document.getElementById("amount").value;
+        const display = document.getElementById("balanceUSD");
+        if(coinRate > 0 && amt > 0) {
+            display.innerText = "$" + (amt * coinRate).toFixed(5);
+        } else {
+            display.innerText = "$0.00000";
+        }
+    }
 
-        const userRef = db.ref("users/" + uid);
-        
-        userRef.transaction((current) => {
-            if (current && (current.balance || 0) >= amt) {
-                current.balance = current.balance - amt;
-                return current;
-            }
-            return;
-        }, (error, committed) => {
-            if (committed) {
-                // Yahan humne key ka naam 'address' rakha hai taaki undefined na aaye
-                db.ref("withdrawals").push({
-                    uid: uid,
-                    amount: amt,
-                    address: addr, 
-                    method: meth,
-                    status: "Pending",
-                    timestamp: Date.now()
-                }).then(() => {
-                    alert("Request Sent Successfully!");
-                    document.getElementById("withdrawAmount").value = "";
-                    document.getElementById("userAddress").value = "";
-                });
-            } else {
-                alert("Insufficient Balance!");
+    // Rate Fetching
+    function syncRate(path) {
+        db.ref(path).on("value", snap => {
+            if(snap.exists()) {
+                coinRate = parseFloat(snap.val());
+                document.getElementById("rateInfo").innerText = "Rate: 1 Coin = $" + coinRate.toFixed(8);
+                liveCalc();
             }
         });
     }
+    syncRate("settings/coin_rate");
+    syncRate("settings/coins_rate");
 
-    // Lite Snow
-    const canvas=document.getElementById("snowCanvas"); const ctx=canvas.getContext("2d");
-    let f=[]; function res(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
-    res(); window.onresize=res;
-    for(let i=0;i<40;i++)f.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,s:Math.random()*15+10,sp:Math.random()*0.5+0.2,o:Math.random()*0.3});
-    function draw(){
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        f.forEach(p=>{
-            ctx.fillStyle=`rgba(255,255,255,${p.o})`;
-            ctx.font=p.s+"px Arial"; ctx.fillText("❄",p.x,p.y);
-            p.y+=p.sp; if(p.y>canvas.height)p.y=-20;
+    // Balance Sync
+    if(uid) {
+        db.ref("users/" + uid).on("value", snap => {
+            const d = snap.val() || {balance: 0};
+            currentBalance = d.balance || 0;
+            document.getElementById("balanceCoins").innerText = currentBalance.toLocaleString() + " Coins";
         });
-        requestAnimationFrame(draw);
-    } draw();
+    }
+
+    // History Display
+    db.ref("withdrawals").orderByChild("uid").equalTo(uid).on("value", snap => {
+        const list = document.getElementById("historyList");
+        list.innerHTML = "";
+        if(!snap.exists()) return list.innerHTML = `<p style="text-align:center; opacity:0.4; font-size:12px;">No history.</p>`;
+        
+        const data = snap.val();
+        Object.keys(data).reverse().forEach(id => {
+            const item = data[id];
+            const statusClass = "status-" + (item.status ? item.status.toLowerCase() : "pending");
+            list.innerHTML += `
+                <div class="history-item ${statusClass}">
+                    <div>
+                        <div style="font-weight:bold; font-size:13px;">${item.method}</div>
+                        <div style="font-size:9px; opacity:0.5;">${item.date || ""}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="color:#7dffb3; font-weight:bold;">$${item.amountInUSD || "0.00"}</div>
+                        <div style="font-size:10px; font-weight:bold;">${(item.status || "PENDING").toUpperCase()}</div>
+                    </div>
+                </div>`;
+        });
+    });
+
+    function submitWithdraw() {
+        const method = document.getElementById("method").value;
+        const amt = parseInt(document.getElementById("amount").value);
+        let addressStr = "";
+
+        if(method === "FaucetPay") {
+            const email = document.getElementById("fpEmail").value;
+            const coin = document.getElementById("coinName").value;
+            if(!email || !coin) return alert("Fill Email and Coin Name!");
+            addressStr = "Email: " + email + " | Coin: " + coin;
+        } else {
+            addressStr = document.getElementById("walletAddr").value;
+            if(!addressStr) return alert("Wallet Address is required!");
+        }
+
+        if(coinRate === 0) return alert("Rate still loading...");
+        
+        // --- Updated Limits Logic ---
+        const minLimit = (method === "FaucetPay") ? 1000 : 20000;
+        
+        if(isNaN(amt) || amt < minLimit) return alert("Minimum coins for " + method + " is " + minLimit.toLocaleString());
+        if(amt > currentBalance) return alert("Insufficient balance!");
+
+        const usdFinal = (amt * coinRate).toFixed(5);
+
+        db.ref("users/" + uid).update({ balance: currentBalance - amt });
+        db.ref("withdrawals").push({
+            uid: uid,
+            method: method,
+            address: addressStr,
+            amountInCoins: amt,
+            amountInUSD: usdFinal,
+            status: "pending",
+            date: new Date().toLocaleString()
+        });
+        
+        alert("Success! Request Sent.");
+        document.getElementById("amount").value = "";
+        liveCalc();
+    }
+
+    // Snow script
+    const canvas=document.getElementById("snowCanvas");const ctx=canvas.getContext("2d");let f=[];function res(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}res();window.onresize=res;for(let i=0;i<50;i++)f.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,s:Math.random()*15+10,sp:Math.random()*0.8+0.3,o:Math.random()*0.5});function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);f.forEach(p=>{ctx.fillStyle=`rgba(255,255,255,${p.o})`;ctx.font=p.s+"px Arial";ctx.fillText("❄",p.x,p.y);p.y+=p.sp;if(p.y>canvas.height)p.y=-20});requestAnimationFrame(draw)}draw();
 </script>
 </body>
 </html>
