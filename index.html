@@ -3,56 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - View Earn</title>
+    <title>View Earn - Home</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    <script>eruda.init();</script>
+    
+    <script src="https://adsgram.ai/sdk-v3.js" crossorigin="anonymous"></script>
+    
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-    <script src="https://adsgram.ai/sdk-v3.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI', sans-serif}
         body{background:#0b0614;color:#fff;overflow-x:hidden; min-height: 100vh;}
-        #snowCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 99999; }
-        .app{position:relative;z-index:10;padding:20px;padding-bottom:120px;}
-        
-        /* ORIGINAL DESIGN CARDS */
-        .glass-card{ background: rgba(25, 12, 45, 0.6); backdrop-filter: blur(12px); border-radius: 24px; padding: 20px; margin-bottom: 18px; border: 1px solid rgba(211, 107, 255, 0.2); text-align:center;}
-        
-        .balance-val { font-size: 32px; font-weight: 800; color: #d36bff; margin: 5px 0; }
-        
-        .btn{ width:100%; padding:18px; border:none; border-radius:18px; font-size:16px; font-weight:bold; color:#fff; background: linear-gradient(135deg,#a400ff,#ff00cc); cursor:pointer; box-shadow: 0 8px 20px rgba(180,0,255,0.3); margin-top: 10px; transition: 0.3s;}
-        .btn:disabled { background: #444 !important; opacity: 0.6; cursor: not-allowed; box-shadow: none; }
-
-        #adStatus { font-size: 11px; margin-top: 10px; color: #aaa; }
-
-        .bottom-nav{ position:fixed; bottom:0; left:0; width:100%; height:80px; background:#0f0719; display:flex; justify-content:space-around; align-items:center; z-index:10000; border-top:1px solid rgba(211,107,255,0.15);}
-        .bottom-nav a{ text-decoration:none; color:#777; text-align:center; flex:1; font-size:11px; }
-        .bottom-nav a.active{ color:#d36bff; }
-        .bottom-nav i{ display:block; font-size:22px; margin-bottom:4px; }
+        #snowCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
+        .app{position:relative;z-index:10;padding:20px;padding-bottom:120px; animation: fadeIn 0.8s ease-out;}
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        h1{text-align:center;font-size:32px;color:#d36bff;text-shadow:0 0 10px rgba(180,0,255,0.4);margin-bottom:20px}
+        .glass-card{ background: rgba(25, 12, 45, 0.6); backdrop-filter: blur(10px); border-radius: 24px; padding: 20px; margin-bottom: 18px; border: 1px solid rgba(211, 107, 255, 0.2); text-align:center; }
+        .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .stat h2{color:#7dffb3;font-size:24px;margin-bottom:4px}
+        .stat p{font-size:12px;opacity:0.6;text-transform:uppercase}
+        .btn{ width:100%;padding:18px;border:none;border-radius:18px;font-size:16px; font-weight:bold;color:#fff;background:linear-gradient(135deg,#a400ff,#ff00cc); cursor:pointer; box-shadow:0 5px 15px rgba(180,0,255,0.3); transition: 0.3s; }
+        .btn:active { transform: scale(0.96); }
+        .btn:disabled { background: #444; opacity: 0.7; }
+        .bottom-nav{ position:fixed;bottom:0;left:0;width:100%;height:80px;background:#0f0719; display:flex;justify-content:space-around;align-items:center;z-index:10000; border-top:1px solid rgba(211,107,255,0.15) }
+        .bottom-nav a{text-decoration:none;color:#777;text-align:center;flex:1}
+        .bottom-nav a.active{color:#d36bff}
+        .bottom-nav i{display:block;font-size:24px;margin-bottom:6px}
+        .bottom-nav span{font-size:12px}
     </style>
 </head>
 <body>
     <canvas id="snowCanvas"></canvas>
-    
     <div class="app">
-        <h1 style="text-align:center; color:#d36bff; margin-bottom:20px; font-weight:800;">View Earn</h1>
-
+        <h1>View Earn</h1>
         <div class="glass-card">
-            <p style="font-size:12px; opacity:0.6;">AVAILABLE BALANCE</p>
-            <div class="balance-val" id="userBalance">0 Coins</div>
-            <p id="usdValue" style="color:#7dffb3; font-weight:bold; font-size:14px;">$0.0000</p>
-            <p id="rateInfo" style="font-size:10px; color:#aaa; margin-top:5px;">Syncing Rate...</p>
+            <p style="font-size:12px; opacity:0.6; margin-bottom:5px">ESTIMATED BALANCE</p>
+            <h2 id="usdBalance" style="color:#7dffb3; font-size:30px">$0.000000</h2>
+            <p id="rateInfo" style="font-size: 10px; opacity: 0.5; margin-top: 5px;">Server: Syncing...</p>
         </div>
-
+        <div class="stats">
+            <div class="glass-card stat"><h2 id="mainBalance">0</h2><p>Coins</p></div>
+            <div class="glass-card stat"><h2 id="totalEarned">0</h2><p>Total</p></div>
+            <div class="glass-card stat"><h2 id="refCount">0</h2><p>Refs</p></div>
+            <div class="glass-card stat"><h2 id="todayViews">0</h2><p>Views</p></div>
+        </div>
         <div class="glass-card">
-            <i class="fa-solid fa-circle-play" style="font-size:45px; color:#d36bff; margin-bottom:10px;"></i>
-            <h3>Watch & Earn</h3>
-            <p style="font-size:11px; opacity:0.6; margin-bottom:15px;">Watch a video to earn 10 coins instantly</p>
-            
-            <button id="watchAdBtn" class="btn" onclick="showAdsgram()">
-                <i class="fa-solid fa-video"></i> WATCH ADS
-            </button>
-            <p id="adStatus">Adsgram System Ready</p>
+            <button class="btn" id="adBtn" onclick="showAdsgram()">SHOW AD & EARN +10</button>
+            <p id="statusMsg" style="margin-top:10px; font-size:10px; opacity:0.6; color:#ff9800">Connection: Booting...</p>
         </div>
     </div>
 
@@ -64,79 +64,80 @@
     </nav>
 
 <script>
-    // 1. Firebase Initialization
+    // 1. Firebase Fix
     const firebaseConfig = { databaseURL: "https://watch2earn-e5ab2-default-rtdb.firebaseio.com/" };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const uid = localStorage.getItem("uid");
+    
+    let db;
+    try {
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+    } catch (e) {
+        console.error("Firebase Error: Check Domain Auth", e);
+    }
 
-    let currentBalance = 0;
-    let coinRate = 0;
+    let uid = localStorage.getItem("uid") || "User" + Math.floor(Math.random() * 9999);
+    localStorage.setItem("uid", uid);
+    
+    let coinRate = 0.000001;
 
-    // 2. Adsgram Controller (Updated ID: Int-20394)
-    const AdController = window.Adsgram.init({ blockId: "Int-20394" });
+    // 2. Real-time Data Sync
+    function initSync() {
+        if(!db) return;
 
+        // Rate Sync
+        db.ref("settings/coin_rate").on("value", snap => {
+            if(snap.exists()) coinRate = parseFloat(snap.val());
+            document.getElementById("rateInfo").innerText = "Exchange: 1 Coin = $" + coinRate.toFixed(8);
+        });
+
+        // User Stats Sync
+        db.ref("users/" + uid).on("value", snap => {
+            const d = snap.val() || {balance: 0, earned: 0, referrals: 0, views: 0};
+            document.getElementById("mainBalance").innerText = Math.floor(d.balance || 0);
+            document.getElementById("totalEarned").innerText = d.earned || 0;
+            document.getElementById("refCount").innerText = d.referrals || 0;
+            document.getElementById("todayViews").innerText = d.views || 0;
+            document.getElementById("usdBalance").innerText = "$" + ((d.balance || 0) * coinRate).toFixed(6);
+            document.getElementById("statusMsg").innerText = "Connection: SECURE";
+            document.getElementById("statusMsg").style.color = "#7dffb3";
+        }, (err) => {
+            document.getElementById("statusMsg").innerText = "Auth Error: Add domain in Firebase Settings";
+            document.getElementById("statusMsg").style.color = "#ff5252";
+        });
+    }
+
+    initSync();
+
+    // 3. Adsgram Logic
     function showAdsgram() {
-        const adBtn = document.getElementById("watchAdBtn");
-        const adStatus = document.getElementById("adStatus");
-
-        adBtn.disabled = true;
-        adStatus.innerText = "Ad Loading... Please wait";
-
-        AdController.show().then((result) => {
-            // Ad completed successfully
-            const reward = 10; 
-            db.ref("users/" + uid).update({
-                balance: currentBalance + reward
-            }).then(() => {
-                alert("Success! 10 Coins added to your balance.");
-                adStatus.innerText = "Reward Collected! Next ad ready.";
-                adBtn.disabled = false;
-            });
-        }).catch((result) => {
-            // Ad skipped or error
-            console.error(result);
-            alert("Ad not finished or failed. Try again!");
-            adStatus.innerText = "Ad failed. Try again.";
-            adBtn.disabled = false;
-        });
-    }
-
-    // 3. Data Sync Logic
-    function startSync() {
-        // Rate Fetching
-        const paths = ["settings/coin_rate", "settings/coins_rate"];
-        paths.forEach(p => {
-            db.ref(p).on("value", snap => {
-                if(snap.exists()) {
-                    coinRate = parseFloat(snap.val());
-                    document.getElementById("rateInfo").innerText = "Rate: 1 Coin = $" + coinRate.toFixed(8);
-                    updateUSD();
-                }
-            });
-        });
-
-        // Balance Fetching
-        if(uid) {
-            db.ref("users/" + uid).on("value", snap => {
-                if(snap.exists()) {
-                    const data = snap.val();
-                    currentBalance = data.balance || 0;
-                    document.getElementById("userBalance").innerText = currentBalance.toLocaleString() + " Coins";
-                    updateUSD();
-                }
-            });
+        const btn = document.getElementById("adBtn");
+        if (!window.Adsgram) {
+            alert("Adsgram not loaded. Check whitelist.");
+            return;
         }
+        
+        btn.disabled = true;
+        const AdController = window.Adsgram.init({ blockId: "Int-20394" }); 
+        
+        AdController.show().then(() => {
+            db.ref("users/" + uid).transaction(c => {
+                if (c) {
+                    c.balance = (c.balance || 0) + 10;
+                    c.earned = (c.earned || 0) + 10;
+                    c.views = (c.views || 0) + 1;
+                }
+                return c;
+            });
+            alert("Reward Added! +10 Coins");
+            btn.disabled = false;
+        }).catch((e) => {
+            alert("Ad Closed/Error: " + (e.description || "No Fill"));
+            btn.disabled = false;
+        });
     }
 
-    function updateUSD() {
-        document.getElementById("usdValue").innerText = "$" + (currentBalance * coinRate).toFixed(5);
-    }
-
-    startSync();
-
-    // 4. Original Snowfall Animation
-    const canvas=document.getElementById("snowCanvas");const ctx=canvas.getContext("2d");let f=[];function res(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}res();window.onresize=res;for(let i=0;i<50;i++)f.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,s:Math.random()*15+10,sp:Math.random()*0.8+0.3,o:Math.random()*0.5});function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);f.forEach(p=>{ctx.fillStyle=`rgba(255,255,255,${p.o})`;ctx.font=p.s+"px Arial";ctx.fillText("❄",p.x,p.y);p.y+=p.sp;if(p.y>canvas.height)p.y=-20});requestAnimationFrame(draw)}draw();
+    // Snow script
+    const canvas=document.getElementById("snowCanvas");const ctx=canvas.getContext("2d");let f=[];function res(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}res();window.onresize=res;for(let i=0;i<40;i++)f.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,s:Math.random()*15+10,sp:Math.random()*0.5+0.2,o:Math.random()*0.3});function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);f.forEach(p=>{ctx.fillStyle=`rgba(255,255,255,${p.o})`;ctx.font=p.s+"px Arial";ctx.fillText("❄",p.x,p.y);p.y+=p.sp;if(p.y>canvas.height)p.y=-20});requestAnimationFrame(draw)}draw();
 </script>
 </body>
-</html>
+    </html>
