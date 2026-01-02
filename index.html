@@ -34,6 +34,26 @@
     </style>
 </head>
 <body>
+     
+      <div style="position: absolute; z-index: 99999">
+      <input autocomplete="off" type="checkbox" id="aadsstickymjx4458w" hidden />
+      <div style="padding-top: auto; padding-bottom: 0;">
+        <div style="width:100%;height:auto;position:fixed;text-align:center;font-size:0;top:0;left:0;right:0;margin:auto">
+          <label for="aadsstickymjx4458w" style="top: 50%;transform: translateY(-50%);right:24px;; position: absolute;border-radius: 4px; background: rgba(248, 248, 249, 0.70); padding: 4px;z-index: 99999;cursor:pointer">
+            <svg fill="#000000" height="16px" width="16px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 490 490">
+              <polygon points="456.851,0 245,212.564 33.149,0 0.708,32.337 212.669,245.004 0.708,457.678 33.149,490 245,277.443 456.851,490 489.292,457.678 277.331,245.004 489.292,32.337 "/>
+            </svg>
+          </label>
+          <div id="frame" style="width: 100%;margin: auto;position: relative; z-index: 99998;"><iframe data-aa=2422967 src=//acceptable.a-ads.com/2422967/?size=Adaptive style='border:0; padding:0; width:70%; height:auto; overflow:hidden; margin: auto'></iframe></div>
+        </div>
+        <style>
+      #aadsstickymjx4458w:checked + div {
+        display: none;
+      }
+    </style>
+    </div></div>
+
+
     <canvas id="snowCanvas"></canvas>
     <div class="app">
         <h1>View Earn</h1>
@@ -115,7 +135,7 @@
                 return c;
             });
 
-            alert("Mubarak ho! +10 Coins mil gaye.");
+            alert("CONGRATULATIONS YOUR COINS ADDED .");
             statusMsg.innerText = "Ad Success! Reward Added.";
             statusMsg.style.color = "#7dffb3";
             adBtn.disabled = false;
@@ -131,4 +151,4 @@
     const canvas=document.getElementById("snowCanvas");const ctx=canvas.getContext("2d");let f=[];function res(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}res();window.onresize=res;for(let i=0;i<40;i++)f.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,s:Math.random()*15+10,sp:Math.random()*0.5+0.2,o:Math.random()*0.3});function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);f.forEach(p=>{ctx.fillStyle=`rgba(255,255,255,${p.o})`;ctx.font=p.s+"px Arial";ctx.fillText("❄",p.x,p.y);p.y+=p.sp;if(p.y>canvas.height)p.y=-20});requestAnimationFrame(draw)}draw();
 </script>
 </body>
-    </html>
+</html>
