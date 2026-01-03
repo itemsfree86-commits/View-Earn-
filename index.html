@@ -19,15 +19,7 @@
         body{background:#0b0614;color:#fff;overflow-x:hidden; min-height: 100vh;}
         #snowCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
         
-        /* A-Ads Design Fix: Isse content niche shift ho jayega */
-        .app {
-            position:relative;
-            z-index:10;
-            padding: 20px;
-            padding-top: 70px; /* Ad ke liye jagah */
-            padding-bottom: 120px;
-        }
-
+        .app { position:relative; z-index:10; padding: 20px; padding-top: 70px; padding-bottom: 120px; }
         h1{text-align:center;font-size:32px;color:#d36bff;text-shadow:0 0 10px rgba(180,0,255,0.4);margin-bottom:20px}
         .glass-card{ background: rgba(25, 12, 45, 0.6); backdrop-filter: blur(10px); border-radius: 24px; padding: 20px; margin-bottom: 18px; border: 1px solid rgba(211, 107, 255, 0.2); text-align:center; }
         .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -43,33 +35,15 @@
         .bottom-nav a.active{color:#d36bff}
         .bottom-nav i{display:block;font-size:24px;margin-bottom:6px}
 
-        /* A-Ads Sticky Header */
-        .aads-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 10001;
-            background: rgba(11, 6, 20, 0.9);
-            border-bottom: 1px solid rgba(211, 107, 255, 0.2);
-        }
+        .aads-container { position: fixed; top: 0; left: 0; width: 100%; z-index: 10001; background: rgba(11, 6, 20, 0.9); border-bottom: 1px solid rgba(211, 107, 255, 0.2); }
     </style>
 </head>
 <body>
      
     <div class="aads-container">
-      <input autocomplete="off" type="checkbox" id="aadsstickymjx4458w" hidden />
-      <div style="width:100%; height:60px; display:flex; align-items:center; justify-content:center; position:relative;">
-          <label for="aadsstickymjx4458w" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.2); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items:center; justify-content:center; cursor:pointer; z-index: 10002;">
-            <svg fill="#ffffff" height="12px" width="12px" viewBox="0 0 490 490">
-              <polygon points="456.851,0 245,212.564 33.149,0 0.708,32.337 212.669,245.004 0.708,457.678 33.149,490 245,277.443 456.851,490 489.292,457.678 277.331,245.004 489.292,32.337 "/>
-            </svg>
-          </label>
-          <div id="frame" style="width: 100%; text-align:center;">
-              <iframe data-aa=2422967 src=//acceptable.a-ads.com/2422967/?size=Adaptive style='border:0; padding:0; width:70%; height:50px; overflow:hidden;'></iframe>
-          </div>
+      <div style="width:100%; height:60px; display:flex; align-items:center; justify-content:center;">
+          <iframe data-aa=2422967 src=//acceptable.a-ads.com/2422967/?size=Adaptive style='border:0; padding:0; width:70%; height:50px; overflow:hidden;'></iframe>
       </div>
-      <style> #aadsstickymjx4458w:checked + div { display: none; } #aadsstickymjx4458w:checked ~ .aads-container { display: none; } </style>
     </div>
 
     <canvas id="snowCanvas"></canvas>
@@ -104,8 +78,35 @@
     const firebaseConfig = { databaseURL: "https://watch2earn-e5ab2-default-rtdb.firebaseio.com/" };
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    
     let uid = localStorage.getItem("uid");
     let coinRate = 0.000001;
+
+    // --- Referral System Logic ---
+    async function initApp() {
+        const urlParams = new URLSearchParams(window.location.search);
+        let refBy = urlParams.get('ref') || urlParams.get('start');
+
+        if (!uid) {
+            uid = "user_" + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem("uid", uid);
+            
+            await db.ref("users/" + uid).set({
+                balance: 0, earned: 0, views: 0, referrals: 0, joinedAt: Date.now()
+            });
+
+            if (refBy && refBy !== uid) {
+                db.ref("users/" + refBy).transaction(d => {
+                    if (d) {
+                        d.referrals = (d.referrals || 0) + 1;
+                        d.balance = (d.balance || 0) + 1000;
+                    }
+                    return d;
+                });
+            }
+        }
+        syncData();
+    }
 
     function syncData() {
         db.ref("settings/coin_rate").on("value", snap => {
@@ -124,19 +125,15 @@
             });
         }
     }
-    syncData();
 
     function showMonetagAd() {
-        const adBtn = document.getElementById("adBtn");
-        const statusMsg = document.getElementById("statusMsg");
-
         if (typeof show_10407398 !== 'function') {
-            alert("Monetag Ads load ho rahi hain, please wait.");
+            alert("Ads load ho rahi hain, please wait.");
             return;
         }
 
+        const adBtn = document.getElementById("adBtn");
         adBtn.disabled = true;
-        statusMsg.innerText = "Opening Ad...";
 
         show_10407398().then(() => {
             db.ref("users/" + uid).transaction(c => {
@@ -147,14 +144,16 @@
                 }
                 return c;
             });
-            alert("CONGRATULATIONS! COINS ADDED.");
+            alert("Coins Added!");
             adBtn.disabled = false;
-        }).catch((e) => {
+        }).catch(() => {
             adBtn.disabled = false;
         });
     }
 
+    initApp();
+
     const canvas=document.getElementById("snowCanvas");const ctx=canvas.getContext("2d");let f=[];function res(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}res();window.onresize=res;for(let i=0;i<40;i++)f.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,s:Math.random()*15+10,sp:Math.random()*0.5+0.2,o:Math.random()*0.3});function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);f.forEach(p=>{ctx.fillStyle=`rgba(255,255,255,${p.o})`;ctx.font=p.s+"px Arial";ctx.fillText("❄",p.x,p.y);p.y+=p.sp;if(p.y>canvas.height)p.y=-20});requestAnimationFrame(draw)}draw();
 </script>
-</body>
+</body> 
 </html>
