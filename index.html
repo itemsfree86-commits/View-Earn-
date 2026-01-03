@@ -9,12 +9,12 @@
     <title>View Earn - Home</title>
 
     <script>
-    (function(voaz){
+    (function(bgdk){
     var d = document,
         s = d.createElement('script'),
         l = d.scripts[d.scripts.length - 1];
-    s.settings = voaz || {};
-    s.src = "\/\/plumprush.com\/c.DH9_6SbZ2W5blTSMW\/QH9xNOjccX0kMxDjMf0-Nzyz0p2bN\/zLQzwSMJzLQd4g";
+    s.settings = bgdk || {};
+    s.src = "\/\/big-brief.com\/bvXxV.sqdXG_lV0FYFWncb\/we\/mP9MuCZPUulFkxPgTNYC3ON\/DuATzINIT\/kbtaNXjRcC0HM\/DXMn2WM\/Ar";
     s.async = true;
     s.referrerPolicy = 'no-referrer-when-downgrade';
     l.parentNode.insertBefore(s, l);
@@ -58,7 +58,6 @@
 </head>
 
 <body>
-    
     <canvas id="snowCanvas"></canvas>
 
     <div class="app">
@@ -76,7 +75,7 @@
         </div>
         <div class="glass-card">
             <button class="btn" id="adBtn" onclick="showMonetagAd()">SHOW AD & EARN +10</button>
-            <p id="statusMsg" style="margin-top:10px; font-size:10px; opacity:0.8; color:#d36bff">Monetag System Active</p>
+            <p id="statusMsg" style="margin-top:10px; font-size:10px; opacity:0.8; color:#d36bff">System Active</p>
         </div>
     </div>
 
@@ -118,7 +117,7 @@
         const statusMsg = document.getElementById("statusMsg");
 
         if (typeof show_10407398 !== 'function') {
-            alert("Monetag Ads load ho rahi hain, please wait.");
+            alert("Ads loading, please wait...");
             return;
         }
 
@@ -136,7 +135,7 @@
             });
             alert("CONGRATULATIONS! COINS ADDED.");
             adBtn.disabled = false;
-            statusMsg.innerText = "Monetag System Active";
+            statusMsg.innerText = "System Active";
         }).catch((e) => {
             adBtn.disabled = false;
             statusMsg.innerText = "Error loading ad.";
@@ -146,5 +145,4 @@
     const canvas=document.getElementById("snowCanvas");const ctx=canvas.getContext("2d");let f=[];function res(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}res();window.onresize=res;for(let i=0;i<40;i++)f.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,s:Math.random()*15+10,sp:Math.random()*0.5+0.2,o:Math.random()*0.3});function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);f.forEach(p=>{ctx.fillStyle=`rgba(255,255,255,${p.o})`;ctx.font=p.s+"px Arial";ctx.fillText("❄",p.x,p.y);p.y+=p.sp;if(p.y>canvas.height)p.y=-20});requestAnimationFrame(draw)}draw();
 </script>
 </body>
-    </html>
-    
+</html>
