@@ -18,43 +18,62 @@
         *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI', sans-serif}
         body{background:#0b0614;color:#fff;overflow-x:hidden; min-height: 100vh;}
         #snowCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
-        .app{position:relative;z-index:10;padding:20px;padding-bottom:120px;}
+        
+        /* A-Ads Design Fix: Isse content niche shift ho jayega */
+        .app {
+            position:relative;
+            z-index:10;
+            padding: 20px;
+            padding-top: 70px; /* Ad ke liye jagah */
+            padding-bottom: 120px;
+        }
+
         h1{text-align:center;font-size:32px;color:#d36bff;text-shadow:0 0 10px rgba(180,0,255,0.4);margin-bottom:20px}
         .glass-card{ background: rgba(25, 12, 45, 0.6); backdrop-filter: blur(10px); border-radius: 24px; padding: 20px; margin-bottom: 18px; border: 1px solid rgba(211, 107, 255, 0.2); text-align:center; }
         .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
         .stat h2{color:#7dffb3;font-size:24px;margin-bottom:4px}
         .stat p{font-size:12px;opacity:0.6;text-transform:uppercase}
+        
         .btn{ width:100%;padding:18px;border:none;border-radius:18px;font-size:16px; font-weight:bold;color:#fff;background:linear-gradient(135deg,#a400ff,#ff00cc); cursor:pointer; box-shadow:0 5px 15px rgba(180,0,255,0.3); transition: 0.3s; }
         .btn:active { transform: scale(0.96); }
         .btn:disabled { background: #444; opacity: 0.7; }
+
         .bottom-nav{ position:fixed;bottom:0;left:0;width:100%;height:80px;background:#0f0719; display:flex;justify-content:space-around;align-items:center;z-index:10000; border-top:1px solid rgba(211,107,255,0.15) }
         .bottom-nav a{text-decoration:none;color:#777;text-align:center;flex:1}
         .bottom-nav a.active{color:#d36bff}
         .bottom-nav i{display:block;font-size:24px;margin-bottom:6px}
+
+        /* A-Ads Sticky Header */
+        .aads-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 10001;
+            background: rgba(11, 6, 20, 0.9);
+            border-bottom: 1px solid rgba(211, 107, 255, 0.2);
+        }
     </style>
 </head>
 <body>
      
-      <div style="position: absolute; z-index: 99999">
+    <div class="aads-container">
       <input autocomplete="off" type="checkbox" id="aadsstickymjx4458w" hidden />
-      <div style="padding-top: auto; padding-bottom: 0;">
-        <div style="width:100%;height:auto;position:fixed;text-align:center;font-size:0;top:0;left:0;right:0;margin:auto">
-          <label for="aadsstickymjx4458w" style="top: 50%;transform: translateY(-50%);right:24px;; position: absolute;border-radius: 4px; background: rgba(248, 248, 249, 0.70); padding: 4px;z-index: 99999;cursor:pointer">
-            <svg fill="#000000" height="16px" width="16px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 490 490">
+      <div style="width:100%; height:60px; display:flex; align-items:center; justify-content:center; position:relative;">
+          <label for="aadsstickymjx4458w" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.2); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items:center; justify-content:center; cursor:pointer; z-index: 10002;">
+            <svg fill="#ffffff" height="12px" width="12px" viewBox="0 0 490 490">
               <polygon points="456.851,0 245,212.564 33.149,0 0.708,32.337 212.669,245.004 0.708,457.678 33.149,490 245,277.443 456.851,490 489.292,457.678 277.331,245.004 489.292,32.337 "/>
             </svg>
           </label>
-          <div id="frame" style="width: 100%;margin: auto;position: relative; z-index: 99998;"><iframe data-aa=2422967 src=//acceptable.a-ads.com/2422967/?size=Adaptive style='border:0; padding:0; width:70%; height:auto; overflow:hidden; margin: auto'></iframe></div>
-        </div>
-        <style>
-      #aadsstickymjx4458w:checked + div {
-        display: none;
-      }
-    </style>
-    </div></div>
-
+          <div id="frame" style="width: 100%; text-align:center;">
+              <iframe data-aa=2422967 src=//acceptable.a-ads.com/2422967/?size=Adaptive style='border:0; padding:0; width:70%; height:50px; overflow:hidden;'></iframe>
+          </div>
+      </div>
+      <style> #aadsstickymjx4458w:checked + div { display: none; } #aadsstickymjx4458w:checked ~ .aads-container { display: none; } </style>
+    </div>
 
     <canvas id="snowCanvas"></canvas>
+
     <div class="app">
         <h1>View Earn</h1>
         <div class="glass-card">
@@ -88,7 +107,6 @@
     let uid = localStorage.getItem("uid");
     let coinRate = 0.000001;
 
-    // Sync Stats
     function syncData() {
         db.ref("settings/coin_rate").on("value", snap => {
             if(snap.exists()) coinRate = parseFloat(snap.val());
@@ -108,24 +126,19 @@
     }
     syncData();
 
-    // MONETAG LOGIC (REPLACED ADSGRAM)
     function showMonetagAd() {
         const adBtn = document.getElementById("adBtn");
         const statusMsg = document.getElementById("statusMsg");
 
-        // Step 1: Check if Monetag SDK loaded
         if (typeof show_10407398 !== 'function') {
-            alert("Monetag Ads load ho rahi hain, please 2 second rukein.");
+            alert("Monetag Ads load ho rahi hain, please wait.");
             return;
         }
 
         adBtn.disabled = true;
         statusMsg.innerText = "Opening Ad...";
-        statusMsg.style.color = "#a400ff";
 
-        // Step 2: Show Rewarded Ad
         show_10407398().then(() => {
-            // Success: Reward Logic
             db.ref("users/" + uid).transaction(c => {
                 if (c) {
                     c.balance = (c.balance || 0) + 10;
@@ -134,20 +147,13 @@
                 }
                 return c;
             });
-
-            alert("CONGRATULATIONS YOUR COINS ADDED .");
-            statusMsg.innerText = "Ad Success! Reward Added.";
-            statusMsg.style.color = "#7dffb3";
+            alert("CONGRATULATIONS! COINS ADDED.");
             adBtn.disabled = false;
         }).catch((e) => {
-            console.error("Monetag Error:", e);
-            statusMsg.innerText = "No Ads Available Right Now";
-            statusMsg.style.color = "#ff5252";
             adBtn.disabled = false;
         });
     }
 
-    // Snow script
     const canvas=document.getElementById("snowCanvas");const ctx=canvas.getContext("2d");let f=[];function res(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}res();window.onresize=res;for(let i=0;i<40;i++)f.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,s:Math.random()*15+10,sp:Math.random()*0.5+0.2,o:Math.random()*0.3});function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);f.forEach(p=>{ctx.fillStyle=`rgba(255,255,255,${p.o})`;ctx.font=p.s+"px Arial";ctx.fillText("❄",p.x,p.y);p.y+=p.sp;if(p.y>canvas.height)p.y=-20});requestAnimationFrame(draw)}draw();
 </script>
 </body>
