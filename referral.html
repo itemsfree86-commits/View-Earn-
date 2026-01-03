@@ -16,10 +16,10 @@
         .glass-card{ background: rgba(25, 12, 45, 0.6); backdrop-filter: blur(12px); border-radius: 24px; padding: 25px; margin-bottom: 18px; border: 1px solid rgba(211, 107, 255, 0.2); text-align:center;}
         .refer-icon{ font-size: 50px; color: #d36bff; margin-bottom: 15px; }
         .bonus-badge { background: rgba(125, 255, 179, 0.2); color: #7dffb3; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; margin-bottom: 15px; }
-        .link-box { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 15px; border: 1px dashed #d36bff; font-size: 13px; color: #ccc; word-break: break-all; margin: 15px 0; cursor: pointer; position: relative; }
+        .link-box { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 15px; border: 1px dashed #d36bff; font-size: 11px; color: #ccc; word-break: break-all; margin: 15px 0; cursor: pointer; position: relative; text-align: left; }
         .btn-share{ width:100%; padding:18px; border:none; border-radius:18px; font-size:16px; font-weight:bold; color:#fff; background: linear-gradient(135deg,#a400ff,#ff00cc); cursor:pointer; box-shadow: 0 8px 20px rgba(180,0,255,0.3); }
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
-        .stat-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.1); }
+        .stat-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
         .bottom-nav{ position:fixed; bottom:0; left:0; width:100%; height:80px; background:#0f0719; display:flex; justify-content:space-around; align-items:center; z-index:10000; border-top:1px solid rgba(211,107,255,0.15);}
         .bottom-nav a{ text-decoration:none; color:#777; text-align:center; flex:1; font-size:11px; }
         .bottom-nav a.active{ color:#d36bff; }
@@ -37,8 +37,8 @@
             <p style="font-size: 13px; color: #aaa; margin: 10px 0;">Share your link and get bonus coins for every friend who joins!</p>
             <div class="bonus-badge">+ 1,000 COINS PER REFER</div>
             
-            <div class="link-box" id="referLink" onclick="copyLink()">
-                Loading Link...
+            <div class="link-box" onclick="copyLink()">
+                <span id="referLink">Loading Link...</span>
                 <i class="fa-regular fa-copy" style="position:absolute; right:10px; top:18px; color:#d36bff;"></i>
             </div>
             
@@ -70,32 +70,36 @@
     const db = firebase.database();
     const uid = localStorage.getItem("uid");
     
-    // Yahan apne Bot ka username bina @ ke daalein
+    // Aapke Bot ka correct URL (Mini App link)
+    // NOTE: Agar aap Telegram Bot ke andar redirect chahte hain toh ye best hai:
     const botUsername = "bestviewearnonads_bot"; 
-
-    // Generate Referral Link
     const myReferralLink = `https://t.me/${botUsername}?start=${uid}`;
+    
     document.getElementById("referLink").innerText = myReferralLink;
 
-    // Load Stats
-    db.ref("users/" + uid).on("value", snap => {
-        const d = snap.val() || {};
-        document.getElementById("totalRefs").innerText = d.referCount || 0;
-        document.getElementById("refEarn").innerText = ((d.referCount || 0) * 1000).toLocaleString() + " Coins";
-    });
+    // Load Stats - KEY FIX: referCount ki jagah referrals use kiya jo index.html mein hai
+    if(uid) {
+        db.ref("users/" + uid).on("value", snap => {
+            const d = snap.val() || {};
+            const count = d.referrals || 0;
+            document.getElementById("totalRefs").innerText = count;
+            document.getElementById("refEarn").innerText = (count * 1000).toLocaleString() + " Coins";
+        });
+    }
 
     function copyLink() {
-        navigator.clipboard.writeText(myReferralLink);
-        alert("Link Copied!");
+        const link = document.getElementById("referLink").innerText;
+        navigator.clipboard.writeText(link);
+        alert("Referral Link Copied!");
     }
 
     function shareToTelegram() {
-        const text = encodeURIComponent("🚀 Join this awesome bot and start earning USDT for free!\n\n🎁 Get 1,000 coins as a joining bonus!");
+        const text = encodeURIComponent("🚀 Join this awesome bot and start earning USDT for free!\n\n🎁 Get 1,000 coins as a bonus!");
         window.open(`https://t.me/share/url?url=${encodeURIComponent(myReferralLink)}&text=${text}`);
     }
 
-    // Foreground Snow logic
-    const canvas=document.getElementById("snowCanvas");const ctx=canvas.getContext("2d");let f=[];function res(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}res();window.onresize=res;for(let i=0;i<50;i++)f.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,s:Math.random()*15+10,sp:Math.random()*0.8+0.3,o:Math.random()*0.5});function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);f.forEach(p=>{ctx.fillStyle=`rgba(255,255,255,${p.o})`;ctx.font=p.s+"px Arial";ctx.fillText("❄",p.x,p.y);p.y+=p.sp;if(p.y>canvas.height)p.y=-20});requestAnimationFrame(draw)}draw();
+    // Snow logic
+    const canvas=document.getElementById("snowCanvas");const ctx=canvas.getContext("2d");let f=[];function res(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}res();window.onresize=res;for(let i=0;i<40;i++)f.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,s:Math.random()*15+10,sp:Math.random()*0.5+0.2,o:Math.random()*0.3});function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);f.forEach(p=>{ctx.fillStyle=`rgba(255,255,255,${p.o})`;ctx.font=p.s+"px Arial";ctx.fillText("❄",p.x,p.y);p.y+=p.sp;if(p.y>canvas.height)p.y=-20});requestAnimationFrame(draw)}draw();
 </script>
 </body>
-    </html>
+</html>
